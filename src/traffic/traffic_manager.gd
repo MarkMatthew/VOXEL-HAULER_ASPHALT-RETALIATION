@@ -10,7 +10,9 @@ const TrafficVehicleScript = preload("res://src/traffic/traffic_vehicle.gd")
 
 # 4 Highway Lanes (Width ~3.75m each)
 var lane_x_positions: Array[float] = [-5.625, -1.875, 1.875, 5.625]
-var vehicle_types: Array[String] = ["Sedan", "SUV", "Sports", "Van", "Sedan"]
+var vehicle_types: Array[String] = [
+	"Sedan", "SportsSedan", "SUV", "Pickup", "Supercar", "DeliveryVan", "CivilianSemi"
+]
 
 var spawn_timer: float = 0.0
 var active_traffic: Array[Node3D] = []

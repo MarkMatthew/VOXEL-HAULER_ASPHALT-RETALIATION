@@ -119,3 +119,16 @@ PASS: Retaliation mode successfully activated with dual turrets deployed!
    ★★★ IN-ENGINE VERIFICATION COMPLETED WITH 100% PASS! ★★★   
 ============================================================
 ```
+
+---
+
+## V1.1 Master Upgrade Verification (Browser & Vercel Production)
+
+### Phase A–H Verification Summary
+- **Elevated Camera Rig**: Verified default elevated chase (15.5m height, 25m distance, ~25° downward pitch) and 3 cycle presets on `C` key (Elevated, Standard, Tactical Overview).
+- **Time-of-Day Engine**: Dynamic sun elevation, directional color, ambient light, sky & fog gradient lerp across Daytime (14:00), Sunset (17:30), and Night (21:00). Verified dev hotkeys `1`, `2`, `3`.
+- **Dynamic Multi-Track Music Director**: Web Audio synthesis of Instrumental Soft Rock (105 BPM cruising) seamlessly crossfading to Heavy Metal (155 BPM double-kick retaliation), with ambient warehouse arrival ducking.
+- **Physical Warehouse Delivery**: Riverside Logistics Center at Z=2240; approach overhead gantry at Z=2120; animated roll-up shutter door lifting at Z>=2180; interior polished concrete bay with structural trusses, pallet racks, and LED fixtures; door closes behind trailer at Z>=2265; triggers Contract Round 2 ("METRO CONTAINER SHIFT").
+- **Multi-Class High-Detail Traffic**: 8 distinct vehicle models (Compact Sedan, Sports Sedan, SUV, Pickup, Supercar, Delivery Van, Civilian Semi, Police Cruiser).
+- **Vercel Readiness**: `vercel.json` configured with `cleanUrls: true` and `Cross-Origin-Embedder-Policy: credentialless`. Redundant synchronized entry points at root `index.html` and `public/index.html`. Zero syntax errors.
+

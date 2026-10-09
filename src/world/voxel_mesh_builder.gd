@@ -393,7 +393,7 @@ static func build_traffic_mesh(vehicle_type: String, body_color: Color) -> Node3
 				tl.position = Vector3(side * 0.75, 0.65, -2.41)
 				car.add_child(tl)
 
-		"Sports":
+		"Sports", "SportsSedan":
 			# Low sleek aerodynamic body
 			var base = create_box_mesh(Vector3(1.9, 0.4, 4.2), body_color, 0.6, 0.2)
 			base.position = Vector3(0, 0.35, 0)
@@ -416,6 +416,115 @@ static func build_traffic_mesh(vehicle_type: String, body_color: Color) -> Node3
 				car.add_child(hl)
 				var tl = create_box_mesh(Vector3(0.35, 0.08, 0.08), Color(1.0, 0.1, 0.1), 0.0, 0.1, Color(1.0, 0.1, 0.1))
 				tl.position = Vector3(side * 0.7, 0.4, -2.11)
+				car.add_child(tl)
+
+		"Supercar":
+			# Ultra-low exotic silhouette
+			var base = create_box_mesh(Vector3(2.0, 0.35, 4.3), body_color, 0.7, 0.15)
+			base.position = Vector3(0, 0.3, 0)
+			car.add_child(base)
+			var canopy = create_box_mesh(Vector3(1.3, 0.4, 1.7), Color(0.08, 0.1, 0.15), 0.1, 0.05)
+			canopy.position = Vector3(0, 0.65, -0.2)
+			car.add_child(canopy)
+			var diffuser = create_box_mesh(Vector3(1.8, 0.15, 0.3), Color(0.1, 0.1, 0.1), 0.8, 0.3)
+			diffuser.position = Vector3(0, 0.25, -2.15)
+			car.add_child(diffuser)
+			var spoiler = create_box_mesh(Vector3(1.7, 0.06, 0.35), Color(0.12, 0.12, 0.12), 0.9, 0.1)
+			spoiler.position = Vector3(0, 0.78, -1.95)
+			car.add_child(spoiler)
+			for z in [1.35, -1.35]:
+				for side in [-1, 1]:
+					var w = create_wheel(0.32, 0.28, Color(0.9, 0.85, 0.3))
+					w.position = Vector3(side * 1.0, 0.32, z)
+					car.add_child(w)
+			for side in [-1, 1]:
+				var hl = create_box_mesh(Vector3(0.32, 0.08, 0.08), Color(0.5, 0.9, 1.0), 0.0, 0.1, Color(0.4, 0.9, 1.0))
+				hl.position = Vector3(side * 0.75, 0.35, 2.16)
+				car.add_child(hl)
+				var tl = create_box_mesh(Vector3(0.35, 0.06, 0.08), Color(1.0, 0.05, 0.05), 0.0, 0.1, Color(1.0, 0.0, 0.0))
+				tl.position = Vector3(side * 0.75, 0.35, -2.16)
+				car.add_child(tl)
+
+		"Pickup":
+			# Heavy American pickup with open bed
+			var frame = create_box_mesh(Vector3(2.1, 0.6, 5.0), body_color, 0.4, 0.4)
+			frame.position = Vector3(0, 0.55, 0)
+			car.add_child(frame)
+			var cab = create_box_mesh(Vector3(1.8, 0.85, 2.2), body_color, 0.4, 0.4)
+			cab.position = Vector3(0, 1.25, 0.4)
+			car.add_child(cab)
+			var win = create_box_mesh(Vector3(1.82, 0.55, 2.0), Color(0.15, 0.2, 0.28), 0.2, 0.1)
+			win.position = Vector3(0, 1.28, 0.4)
+			car.add_child(win)
+			# Bed liner & roll bar
+			var bed_liner = create_box_mesh(Vector3(1.7, 0.4, 2.0), Color(0.15, 0.15, 0.18), 0.6, 0.6)
+			bed_liner.position = Vector3(0, 0.8, -1.3)
+			car.add_child(bed_liner)
+			var rollbar = create_box_mesh(Vector3(1.75, 0.7, 0.1), Color(0.8, 0.8, 0.85), 0.9, 0.2)
+			rollbar.position = Vector3(0, 1.35, -0.7)
+			car.add_child(rollbar)
+			for z in [1.5, -1.5]:
+				for side in [-1, 1]:
+					var w = create_wheel(0.4, 0.3, Color(0.3, 0.3, 0.35))
+					w.position = Vector3(side * 1.05, 0.4, z)
+					car.add_child(w)
+			for side in [-1, 1]:
+				var hl = create_box_mesh(Vector3(0.35, 0.22, 0.08), Color(1.0, 0.98, 0.8), 0.0, 0.1, Color(1.0, 0.95, 0.7))
+				hl.position = Vector3(side * 0.8, 0.65, 2.51)
+				car.add_child(hl)
+				var tl = create_box_mesh(Vector3(0.35, 0.22, 0.08), Color(0.9, 0.1, 0.1), 0.0, 0.1, Color(1.0, 0.1, 0.1))
+				tl.position = Vector3(side * 0.8, 0.65, -2.51)
+				car.add_child(tl)
+
+		"Van", "DeliveryVan":
+			# Commercial high-roof delivery van
+			var base = create_box_mesh(Vector3(2.1, 0.6, 5.2), body_color, 0.3, 0.5)
+			base.position = Vector3(0, 0.55, 0)
+			car.add_child(base)
+			var cargo_box = create_box_mesh(Vector3(2.05, 1.6, 3.4), Color(0.92, 0.92, 0.95), 0.2, 0.5)
+			cargo_box.position = Vector3(0, 1.65, -0.8)
+			car.add_child(cargo_box)
+			var cab = create_box_mesh(Vector3(2.0, 1.2, 1.6), body_color, 0.3, 0.5)
+			cab.position = Vector3(0, 1.45, 1.6)
+			car.add_child(cab)
+			var ws = create_box_mesh(Vector3(1.9, 0.65, 0.1), Color(0.15, 0.2, 0.28), 0.2, 0.1)
+			ws.position = Vector3(0, 1.6, 2.42)
+			car.add_child(ws)
+			for z in [1.5, -1.5]:
+				for side in [-1, 1]:
+					var w = create_wheel(0.36, 0.26, Color(0.7, 0.7, 0.75))
+					w.position = Vector3(side * 1.05, 0.36, z)
+					car.add_child(w)
+			for side in [-1, 1]:
+				var hl = create_box_mesh(Vector3(0.35, 0.18, 0.08), Color(1.0, 0.98, 0.8), 0.0, 0.1, Color(1.0, 0.95, 0.7))
+				hl.position = Vector3(side * 0.8, 0.65, 2.61)
+				car.add_child(hl)
+				var tl = create_box_mesh(Vector3(0.35, 0.25, 0.08), Color(0.9, 0.1, 0.1), 0.0, 0.1, Color(1.0, 0.1, 0.1))
+				tl.position = Vector3(side * 0.85, 0.8, -2.52)
+				car.add_child(tl)
+
+		"CivilianSemi":
+			# Commercial highway hauler day-cab with container
+			var frame = create_box_mesh(Vector3(2.3, 0.5, 7.0), Color(0.2, 0.2, 0.22), 0.7, 0.4)
+			frame.position = Vector3(0, 0.5, 0)
+			car.add_child(frame)
+			var cab = create_box_mesh(Vector3(2.3, 2.0, 2.2), body_color, 0.4, 0.4)
+			cab.position = Vector3(0, 1.75, 2.0)
+			car.add_child(cab)
+			var container = create_box_mesh(Vector3(2.4, 2.2, 4.4), Color(0.25, 0.45, 0.35), 0.5, 0.5)
+			container.position = Vector3(0, 1.85, -1.2)
+			car.add_child(container)
+			for z in [2.2, -1.0, -2.5]:
+				for side in [-1, 1]:
+					var w = create_wheel(0.48, 0.4, Color(0.8, 0.8, 0.85))
+					w.position = Vector3(side * 1.15, 0.48, z)
+					car.add_child(w)
+			for side in [-1, 1]:
+				var hl = create_box_mesh(Vector3(0.4, 0.2, 0.08), Color(1.0, 0.98, 0.8), 0.0, 0.1, Color(1.0, 0.95, 0.7))
+				hl.position = Vector3(side * 0.85, 0.8, 3.12)
+				car.add_child(hl)
+				var tl = create_box_mesh(Vector3(0.4, 0.2, 0.08), Color(0.9, 0.1, 0.1), 0.0, 0.1, Color(1.0, 0.1, 0.1))
+				tl.position = Vector3(side * 0.95, 0.6, -3.52)
 				car.add_child(tl)
 
 		"Police":
@@ -468,17 +577,27 @@ static func build_traffic_mesh(vehicle_type: String, body_color: Color) -> Node3
 				tl.position = Vector3(side * 0.7, 0.5, -2.31)
 				car.add_child(tl)
 
-		_: # Default Van / Pickup
-			var base = create_box_mesh(Vector3(2.0, 0.7, 5.0), body_color, 0.4, 0.4)
-			base.position = Vector3(0, 0.55, 0)
+		_: # Default Compact Sedan
+			var base = create_box_mesh(Vector3(1.8, 0.55, 4.4), body_color, 0.4, 0.4)
+			base.position = Vector3(0, 0.45, 0)
 			car.add_child(base)
-			var van_box = create_box_mesh(Vector3(1.9, 1.4, 3.2), Color(0.9, 0.9, 0.92), 0.3, 0.4)
-			van_box.position = Vector3(0, 1.6, -0.8)
-			car.add_child(van_box)
-			for z in [1.5, -1.5]:
+			var cab = create_box_mesh(Vector3(1.5, 0.65, 2.2), Color(0.15, 0.2, 0.28), 0.2, 0.1)
+			cab.position = Vector3(0, 1.0, -0.2)
+			car.add_child(cab)
+			var roof = create_box_mesh(Vector3(1.52, 0.1, 2.1), body_color, 0.4, 0.4)
+			roof.position = Vector3(0, 1.35, -0.2)
+			car.add_child(roof)
+			for z in [1.3, -1.3]:
 				for side in [-1, 1]:
-					var w = create_wheel(0.36, 0.26, Color(0.7, 0.7, 0.75))
-					w.position = Vector3(side * 1.0, 0.36, z)
+					var w = create_wheel(0.32, 0.22, Color(0.8, 0.8, 0.85))
+					w.position = Vector3(side * 0.9, 0.32, z)
 					car.add_child(w)
+			for side in [-1, 1]:
+				var hl = create_box_mesh(Vector3(0.3, 0.15, 0.08), Color(1.0, 0.98, 0.8), 0.0, 0.1, Color(1.0, 0.95, 0.7))
+				hl.position = Vector3(side * 0.65, 0.5, 2.21)
+				car.add_child(hl)
+				var tl = create_box_mesh(Vector3(0.3, 0.15, 0.08), Color(0.9, 0.1, 0.1), 0.0, 0.1, Color(1.0, 0.1, 0.1))
+				tl.position = Vector3(side * 0.65, 0.5, -2.21)
+				car.add_child(tl)
 	
 	return car

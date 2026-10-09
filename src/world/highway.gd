@@ -5,6 +5,13 @@ const VoxelMeshBuilderRef = preload("res://src/world/voxel_mesh_builder.gd")
 const HIGHWAY_LENGTH: float = 2400.0
 const ROAD_WIDTH: float = 16.0 # 4 lanes
 
+var rollup_door: MeshInstance3D = null
+var door_target_y: float = 3.5
+var door_current_y: float = 3.5
+var door_opened: bool = false
+var door_closed_behind: bool = false
+var destination_approach_sign: Node3D = null
+
 func _ready() -> void:
 	build_highway_roadbed()
 	build_road_markings()
@@ -14,6 +21,30 @@ func _ready() -> void:
 	build_streetlights()
 	build_skyline_and_depots()
 	build_destination_hub()
+
+func _process(delta: float) -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if not player or not is_instance_valid(player):
+		return
+	
+	var pz = player.global_position.z
+	
+	# Approaching warehouse: trigger roll-up door open at Z >= 2180
+	if pz >= 2180.0 and not door_opened:
+		door_opened = true
+		door_target_y = 10.5 # Lifts open above trailer height
+		AudioManager.play_sfx("ui_click", 0.8, -2.0)
+	
+	# Player and trailer fully cleared inside warehouse: close door at Z >= 2265
+	if pz >= 2265.0 and door_opened and not door_closed_behind:
+		door_closed_behind = true
+		door_target_y = 3.5 # Shuts tight behind trailer
+		AudioManager.play_sfx("ui_click", 0.6, 1.0)
+	
+	# Smoothly animate roll-up door vertical translation
+	if rollup_door:
+		door_current_y = lerpf(door_current_y, door_target_y, delta * 3.5)
+		rollup_door.position.y = door_current_y
 
 func build_highway_roadbed() -> void:
 	# Main 4-Lane Asphalt Highway
@@ -301,29 +332,159 @@ func build_skyline_and_depots() -> void:
 		z += 45.0
 
 func build_destination_hub() -> void:
-	# Riverside Logistics Center terminal building and delivery parking bay at Z = 2300
+	# 1. Approach Highway Overhead Gantry at Z = 2120
+	var approach_gantry = Node3D.new()
+	approach_gantry.name = "ApproachGantry"
+	approach_gantry.position = Vector3(0, 0, 2120.0)
+	
+	# Gantry posts
+	for side in [-1, 1]:
+		var post = VoxelMeshBuilderRef.create_box_mesh(Vector3(0.6, 9.0, 0.6), Color(0.3, 0.35, 0.4), 0.7, 0.4)
+		post.position = Vector3(side * 8.8, 4.5, 0)
+		approach_gantry.add_child(post)
+	
+	# Horizontal truss
+	var truss = VoxelMeshBuilderRef.create_box_mesh(Vector3(18.5, 0.8, 0.8), Color(0.3, 0.35, 0.4), 0.7, 0.4)
+	truss.position = Vector3(0, 8.8, 0)
+	approach_gantry.add_child(truss)
+	
+	# Approach Warning Billboard Sign
+	var app_sign = VoxelMeshBuilderRef.create_box_mesh(Vector3(15.0, 2.2, 0.2), Color(0.95, 0.75, 0.05), 0.1, 0.4, Color(0.95, 0.75, 0.05) * 0.4)
+	app_sign.position = Vector3(0, 8.8, 0.5)
+	approach_gantry.add_child(app_sign)
+	
+	var app_lbl = Label3D.new()
+	app_lbl.text = "DESTINATION APPROACHING — REDUCE SPEED FOR BAY 04"
+	app_lbl.font_size = 38
+	app_lbl.outline_size = 14
+	app_lbl.modulate = Color(0.1, 0.1, 0.1)
+	app_lbl.outline_modulate = Color(1.0, 0.9, 0.4)
+	app_lbl.position = Vector3(0, 8.8, 0.65)
+	approach_gantry.add_child(app_lbl)
+	add_child(approach_gantry)
+	
+	# 2. Riverside Logistics Center Terminal Warehouse (Z = 2240 to 2330)
 	var hub = Node3D.new()
 	hub.name = "RiversideLogisticsCenter"
-	hub.position = Vector3(0, 0, 2300.0)
+	hub.position = Vector3(0, 0, 2240.0)
 	
-	# Massive Distribution Terminal Building
-	var terminal = VoxelMeshBuilderRef.create_box_mesh(Vector3(50.0, 12.0, 35.0), Color(0.25, 0.3, 0.38), 0.3, 0.6)
-	terminal.position = Vector3(0, 6.0, 80.0)
-	hub.add_child(terminal)
+	# Polished interior concrete floor slab
+	var int_floor = VoxelMeshBuilderRef.create_box_mesh(Vector3(26.0, 0.4, 90.0), Color(0.22, 0.24, 0.26), 0.4, 0.3)
+	int_floor.position = Vector3(0, -0.19, 45.0)
+	hub.add_child(int_floor)
 	
-	# Terminal Sign
-	var sign_mesh = VoxelMeshBuilderRef.create_box_mesh(Vector3(26.0, 3.0, 0.3), Color(0.9, 0.8, 0.1), 0.1, 0.4)
-	sign_mesh.position = Vector3(0, 10.5, 62.0)
+	# Outer warehouse walls and roof
+	# Left Wall
+	var wall_l = VoxelMeshBuilderRef.create_box_mesh(Vector3(0.8, 11.0, 90.0), Color(0.24, 0.3, 0.38), 0.5, 0.5)
+	wall_l.position = Vector3(-13.0, 5.5, 45.0)
+	hub.add_child(wall_l)
+	
+	# Right Wall
+	var wall_r = VoxelMeshBuilderRef.create_box_mesh(Vector3(0.8, 11.0, 90.0), Color(0.24, 0.3, 0.38), 0.5, 0.5)
+	wall_r.position = Vector3(13.0, 5.5, 45.0)
+	hub.add_child(wall_r)
+	
+	# Back Wall
+	var wall_back = VoxelMeshBuilderRef.create_box_mesh(Vector3(26.8, 11.0, 0.8), Color(0.24, 0.3, 0.38), 0.5, 0.5)
+	wall_back.position = Vector3(0, 5.5, 90.0)
+	hub.add_child(wall_back)
+	
+	# High Industrial Roof
+	var roof = VoxelMeshBuilderRef.create_box_mesh(Vector3(27.0, 0.8, 90.0), Color(0.18, 0.22, 0.28), 0.4, 0.6)
+	roof.position = Vector3(0, 11.2, 45.0)
+	hub.add_child(roof)
+	
+	# Front Entrance Portal Frame
+	# Left facade panel
+	var front_l = VoxelMeshBuilderRef.create_box_mesh(Vector3(8.0, 11.0, 0.8), Color(0.28, 0.34, 0.42), 0.5, 0.5)
+	front_l.position = Vector3(-9.0, 5.5, 0)
+	hub.add_child(front_l)
+	
+	# Right facade panel
+	var front_r = VoxelMeshBuilderRef.create_box_mesh(Vector3(8.0, 11.0, 0.8), Color(0.28, 0.34, 0.42), 0.5, 0.5)
+	front_r.position = Vector3(9.0, 5.5, 0)
+	hub.add_child(front_r)
+	
+	# Over-door facade panel
+	var front_top = VoxelMeshBuilderRef.create_box_mesh(Vector3(10.2, 3.5, 0.8), Color(0.28, 0.34, 0.42), 0.5, 0.5)
+	front_top.position = Vector3(0, 9.25, 0)
+	hub.add_child(front_top)
+	
+	# Animated Roll-Up Industrial Shutter Door (Portal size: Width 10.0, Height 7.5)
+	rollup_door = VoxelMeshBuilderRef.create_box_mesh(Vector3(9.8, 7.4, 0.35), Color(0.82, 0.84, 0.88), 0.8, 0.2)
+	rollup_door.name = "RollupShutterDoor"
+	rollup_door.position = Vector3(0, 3.7, 0)
+	hub.add_child(rollup_door)
+	door_current_y = 3.7
+	door_target_y = 3.7
+	
+	# Safety Bollards (Yellow/Black striped collision posts at entrance)
+	for side in [-1, 1]:
+		for b_z in [-0.6, 0.6]:
+			var bollard = VoxelMeshBuilderRef.create_box_mesh(Vector3(0.35, 1.4, 0.35), Color(1.0, 0.8, 0.0), 0.2, 0.3)
+			bollard.position = Vector3(side * 5.2, 0.7, b_z)
+			hub.add_child(bollard)
+	
+	# Terminal Overhead illuminated Sign
+	var sign_mesh = VoxelMeshBuilderRef.create_box_mesh(Vector3(22.0, 2.2, 0.3), Color(0.9, 0.8, 0.1), 0.1, 0.4)
+	sign_mesh.position = Vector3(0, 9.8, 0.6)
 	hub.add_child(sign_mesh)
 	
 	var lbl = Label3D.new()
-	lbl.text = "RIVERSIDE LOGISTICS CENTER — FREIGHT TERMINAL"
-	lbl.font_size = 42
+	lbl.text = "★ RIVERSIDE LOGISTICS CENTER — FREIGHT TERMINAL ★"
+	lbl.font_size = 40
+	lbl.outline_size = 12
 	lbl.modulate = Color(0.1, 0.1, 0.1)
-	lbl.position = Vector3(0, 10.5, 62.3)
+	lbl.position = Vector3(0, 9.8, 0.8)
 	hub.add_child(lbl)
 	
-	# Marked Yellow Delivery Zone Trigger (The finish line)
+	# Stencil Bay 04 sign above door
+	var bay_lbl = Label3D.new()
+	bay_lbl.text = "BAY 04"
+	bay_lbl.font_size = 72
+	bay_lbl.outline_size = 20
+	bay_lbl.modulate = Color(1.0, 0.85, 0.1)
+	bay_lbl.outline_modulate = Color(0.2, 0.2, 0.2)
+	bay_lbl.position = Vector3(0, 8.2, 0.7)
+	hub.add_child(bay_lbl)
+	
+	# Interior Pallet Racking & Freight Cargo
+	# Left Racks
+	for r_z in [15.0, 32.0, 49.0, 66.0]:
+		var rack_frame = VoxelMeshBuilderRef.create_box_mesh(Vector3(2.4, 7.5, 12.0), Color(0.85, 0.35, 0.1), 0.6, 0.4)
+		rack_frame.position = Vector3(-9.5, 3.75, r_z)
+		hub.add_child(rack_frame)
+		# Pallet cargo
+		var crate1 = VoxelMeshBuilderRef.create_box_mesh(Vector3(2.0, 2.2, 5.0), Color(0.7, 0.55, 0.35), 0.0, 0.9)
+		crate1.position = Vector3(-9.5, 1.4, r_z - 2.5)
+		hub.add_child(crate1)
+		var crate2 = VoxelMeshBuilderRef.create_box_mesh(Vector3(2.0, 2.2, 4.5), Color(0.2, 0.45, 0.7), 0.2, 0.7)
+		crate2.position = Vector3(-9.5, 4.0, r_z + 2.0)
+		hub.add_child(crate2)
+	
+	# Right Racks
+	for r_z in [15.0, 32.0, 49.0, 66.0]:
+		var rack_frame_r = VoxelMeshBuilderRef.create_box_mesh(Vector3(2.4, 7.5, 12.0), Color(0.85, 0.35, 0.1), 0.6, 0.4)
+		rack_frame_r.position = Vector3(9.5, 3.75, r_z)
+		hub.add_child(rack_frame_r)
+		var crate_r = VoxelMeshBuilderRef.create_box_mesh(Vector3(2.0, 2.2, 5.0), Color(0.3, 0.6, 0.4), 0.1, 0.8)
+		crate_r.position = Vector3(9.5, 1.4, r_z)
+		hub.add_child(crate_r)
+	
+	# Interior Overhead Lighting Fixtures
+	for l_z in [12.0, 28.0, 44.0, 60.0]:
+		var lamp = VoxelMeshBuilderRef.create_box_mesh(Vector3(8.0, 0.3, 0.8), Color(0.9, 0.95, 1.0), 0.2, 0.1, Color(1.0, 0.95, 0.85) * 3.0)
+		lamp.position = Vector3(0, 10.4, l_z)
+		hub.add_child(lamp)
+		
+		var omni = OmniLight3D.new()
+		omni.light_color = Color(1.0, 0.92, 0.8)
+		omni.light_energy = 2.5
+		omni.omni_range = 18.0
+		omni.position = Vector3(0, 9.8, l_z)
+		hub.add_child(omni)
+	
+	# Marked Yellow Delivery Zone Trigger (Inside terminal at Z = +35.0 to +65.0)
 	var delivery_trigger = Area3D.new()
 	delivery_trigger.name = "DeliveryTrigger"
 	delivery_trigger.collision_layer = 0
@@ -331,15 +492,15 @@ func build_destination_hub() -> void:
 	
 	var col = CollisionShape3D.new()
 	var box = BoxShape3D.new()
-	box.size = Vector3(18.0, 6.0, 30.0)
+	box.size = Vector3(10.0, 6.0, 26.0)
 	col.shape = box
-	col.position = Vector3(0, 3.0, 25.0)
+	col.position = Vector3(0, 3.0, 45.0)
 	delivery_trigger.add_child(col)
 	
-	# Pulsing yellow hazard stripes mesh on floor
+	# Pulsing yellow hazard stripes mesh on interior bay floor
 	var hazard_plane = MeshInstance3D.new()
 	var p_box = BoxMesh.new()
-	p_box.size = Vector3(16.0, 0.05, 28.0)
+	p_box.size = Vector3(8.5, 0.05, 24.0)
 	hazard_plane.mesh = p_box
 	var h_mat = StandardMaterial3D.new()
 	h_mat.albedo_color = Color(1.0, 0.85, 0.1)
@@ -347,18 +508,18 @@ func build_destination_hub() -> void:
 	h_mat.emission = Color(1.0, 0.75, 0.0)
 	h_mat.emission_energy_multiplier = 2.0
 	hazard_plane.material_override = h_mat
-	hazard_plane.position = Vector3(0, 0.05, 25.0)
+	hazard_plane.position = Vector3(0, 0.05, 45.0)
 	delivery_trigger.add_child(hazard_plane)
 	
-	# Delivery Gate Billboard
-	var gate_label = Label3D.new()
-	gate_label.text = "★ DELIVERY BAY — PULL IN HERE ★"
-	gate_label.font_size = 64
-	gate_label.outline_size = 18
-	gate_label.modulate = Color(1.0, 0.9, 0.1)
-	gate_label.outline_modulate = Color(0.3, 0.1, 0.0)
-	gate_label.position = Vector3(0, 6.0, 25.0)
-	delivery_trigger.add_child(gate_label)
+	# Delivery Bay Overhead Target Stencil
+	var dock_label = Label3D.new()
+	dock_label.text = "★ SECURE BAY 04 — STOP HERE ★"
+	dock_label.font_size = 56
+	dock_label.outline_size = 18
+	dock_label.modulate = Color(1.0, 0.9, 0.1)
+	dock_label.outline_modulate = Color(0.2, 0.1, 0.0)
+	dock_label.position = Vector3(0, 5.5, 45.0)
+	delivery_trigger.add_child(dock_label)
 	
 	delivery_trigger.body_entered.connect(_on_delivery_area_entered)
 	hub.add_child(delivery_trigger)
@@ -367,6 +528,8 @@ func build_destination_hub() -> void:
 
 func _on_delivery_area_entered(body: Node) -> void:
 	if body.is_in_group("player") and GameManager.mission_active:
+		# Disable police pursuit once safely docked inside warehouse
+		GameManager.police_heat = 0
 		AudioManager.play_sfx("victory", 1.0, 3.0)
 		var results = GameManager.complete_mission()
 		# Show results screen

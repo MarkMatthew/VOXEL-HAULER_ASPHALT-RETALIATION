@@ -4,12 +4,14 @@ extends Camera3D
 @export var follow_speed: float = 7.0
 @export var rotation_speed: float = 5.0
 
-# Camera Distance presets
-var distance_mode: int = 0 # 0: Normal, 1: Wide
+# Camera Distance presets (V1.1 High-Fidelity Elevated Rig)
+var distance_mode: int = 0 # 0: Elevated Default, 1: Standard Chase, 2: Tactical Overview
 var distances: Array[Vector3] = [
-	Vector3(0, 4.5, -11.0), # Normal chase
-	Vector3(0, 6.0, -15.0)  # Wide chase
+	Vector3(0, 15.5, -25.0), # Elevated chase default (4+ lanes ahead, ~25° down-angle)
+	Vector3(0, 6.5, -13.0),  # Standard chase
+	Vector3(0, 22.0, -32.0)  # Tactical high overview
 ]
+var look_ahead_distances: Array[float] = [24.0, 10.0, 28.0]
 
 var base_fov: float = 70.0
 var retaliation_fov: float = 82.0
@@ -58,8 +60,9 @@ func _process(delta: float) -> void:
 	# Smooth damp towards desired pos
 	global_position = global_position.lerp(desired_pos, delta * follow_speed)
 	
-	# Look at point slightly ahead of the truck cab
-	var look_target = target_node.global_position + (forward * 8.0) + (up * 1.5)
+	# Look at point ahead of the truck cab (preset-specific pitch framing)
+	var look_dist = look_ahead_distances[distance_mode]
+	var look_target = target_node.global_position + (forward * look_dist) + (up * 1.5)
 	var look_dir = (look_target - global_position).normalized()
 	
 	# Smoothly look at target

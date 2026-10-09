@@ -89,9 +89,12 @@ func _init() -> void:
 		print("PASS: Highway configured for 4 lanes (16m width) across 2,400m delivery run.")
 	highway.free()
 
-	# --- TEST GROUP 5: AI TRAFFIC VEHICLE TYPES ---
-	print("\n[GROUP 5] Testing AI Traffic Vehicles...")
-	for vtype in ["Sedan", "SUV", "Sports", "Police", "Van"]:
+	# --- TEST GROUP 5: AI TRAFFIC VEHICLE TYPES & HIGH-DETAIL MODELS ---
+	print("\n[GROUP 5] Testing AI Traffic Vehicles (All 8 Models)...")
+	var all_traffic_types = [
+		"Sedan", "SportsSedan", "SUV", "Pickup", "Supercar", "DeliveryVan", "CivilianSemi", "Police"
+	]
+	for vtype in all_traffic_types:
 		var tmesh = VoxelMeshBuilderRef.build_traffic_mesh(vtype, Color.CORNFLOWER_BLUE)
 		if tmesh == null or tmesh.get_child_count() == 0:
 			print("FAIL: Traffic mesh for ", vtype, " failed")
