@@ -1,0 +1,11 @@
+# Godot 4
+.godot/
+*.translation
+
+# OS specific
+.DS_Store
+*.tmp
+Thumbs.db
+
+# Vercel
+.vercel

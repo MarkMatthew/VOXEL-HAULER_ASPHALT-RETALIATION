@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>VOXEL HAULER: ASPHALT RETALIATION</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #0c0e14; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #fff; }
+    
+    #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+    
+    /* HUD LAYOUT */
+    #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; display: none; }
+    
+    /* UPPER-LEFT GPS */
+    .gps-panel {
+      position: absolute; top: 20px; left: 20px; width: 280px; height: 210px;
+      background: rgba(12, 16, 24, 0.88); border: 2px solid rgba(40, 110, 190, 0.8);
+      border-radius: 8px; padding: 12px; display: flex; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .gps-canvas-wrap { width: 90px; height: 100%; background: #080a10; border: 1px solid #1a2538; border-radius: 4px; overflow: hidden; }
+    #gps-canvas { width: 100%; height: 100%; }
+    .gps-details { flex: 1; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; }
+    .gps-title { color: #5bc0de; font-weight: 700; letter-spacing: 1px; font-size: 10px; }
+    .gps-maneuver { color: #ffd700; font-size: 13px; font-weight: 800; }
+    .gps-dist { font-size: 13px; font-weight: 700; color: #fff; }
+    .gps-meta { color: #9ab; font-size: 11px; line-height: 1.4; }
+    .gps-timer-box { background: rgba(20, 26, 40, 0.9); border: 1px solid #34495e; border-radius: 4px; padding: 4px; text-align: center; }
+    .gps-timer-title { font-size: 9px; color: #8a9ba8; letter-spacing: 0.5px; }
+    .gps-timer-val { font-size: 20px; font-weight: 800; color: #ffd700; font-family: monospace; }
+    
+    /* UPPER-RIGHT POLICE HEAT */
+    .police-panel {
+      position: absolute; top: 20px; right: 20px; width: 220px;
+      background: rgba(12, 16, 24, 0.88); border: 2px solid rgba(40, 110, 190, 0.8);
+      border-radius: 8px; padding: 10px 14px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .police-title { font-size: 10px; color: #8a9ba8; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
+    .police-stars { font-size: 24px; letter-spacing: 4px; color: #444; text-shadow: 0 0 10px rgba(255,50,50,0.5); }
+    .police-status { font-size: 12px; font-weight: 800; color: #9ab; margin-top: 2px; }
+    
+    /* LARGE ROAD EXIT BANNER */
+    #maneuver-banner {
+      position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+      background: rgba(230, 180, 10, 0.95); border: 3px solid #fff; border-radius: 8px;
+      padding: 10px 28px; color: #111; font-size: 20px; font-weight: 900; letter-spacing: 1px;
+      box-shadow: 0 0 25px rgba(255,200,0,0.8); display: none; text-align: center;
+    }
+    
+    /* RETALIATION BANNER */
+    #retaliation-banner {
+      position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+      background: rgba(220, 20, 40, 0.95); border: 3px solid #ffd700; border-radius: 8px;
+      padding: 10px 32px; color: #fff; text-align: center; box-shadow: 0 0 30px rgba(255,0,0,0.9);
+      display: none; animation: pulse 0.6s infinite alternate;
+    }
+    #retaliation-banner h2 { font-size: 20px; font-weight: 900; letter-spacing: 1.5px; }
+    #retaliation-banner p { font-size: 13px; color: #ffe; margin-top: 2px; }
+    @keyframes pulse { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.04); } }
+    
+    /* LOWER-CENTER SPEED CLUSTER */
+    .telemetry-cluster {
+      position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%);
+      background: rgba(12, 16, 24, 0.88); border: 2px solid rgba(40, 110, 190, 0.8);
+      border-radius: 8px; padding: 10px 24px; display: flex; align-items: center; gap: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .speed-block { display: flex; align-items: baseline; gap: 6px; }
+    .speed-num { font-size: 54px; font-weight: 900; color: #fff; font-family: monospace; min-width: 75px; text-align: right; }
+    .speed-unit { font-size: 16px; font-weight: 800; color: #8a9ba8; }
+    
+    .gear-rpm-block { text-align: center; min-width: 100px; }
+    .gear-label { font-size: 16px; font-weight: 800; color: #ffd700; margin-bottom: 4px; }
+    .rpm-bar-wrap { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+    .rpm-bar-fill { width: 30%; height: 100%; background: #2ecc71; transition: width 0.1s; }
+    .rpm-text { font-size: 11px; color: #9ab; font-family: monospace; }
+    
+    .gauges-block { display: flex; flex-direction: column; gap: 6px; min-width: 140px; font-size: 11px; }
+    .gauge-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .bar-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
+    .truck-bar { width: 100%; height: 100%; background: #3498db; }
+    .cargo-bar { width: 100%; height: 100%; background: #2ecc71; }
+    
+    /* BOTTOM ROAD RAGE METER */
+    .rage-container {
+      position: absolute; bottom: 15px; left: 40px; right: 40px; height: 55px;
+      background: rgba(12, 16, 24, 0.9); border: 2px solid #34495e; border-radius: 6px;
+      padding: 6px 12px; display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .rage-bar-wrap { width: 100%; height: 20px; background: #1a1a24; border-radius: 4px; overflow: hidden; position: relative; }
+    .rage-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c); transition: width 0.15s; }
+    .rage-labels { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800; }
+    .rage-tier { color: #2ecc71; }
+    .rage-prompt { color: #ff3333; font-size: 13px; font-weight: 900; animation: blink 0.5s infinite alternate; display: none; }
+    @keyframes blink { from { opacity: 0.2; } to { opacity: 1; } }
+    
+    /* OVERLAYS: MAIN MENU, GARAGE, PAUSE, RESULTS */
+    .menu-screen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: radial-gradient(circle at center, #141b2d 0%, #080a10 80%);
+    }
+    .title-box { text-align: center; margin-bottom: 30px; }
+    .title-box h1 { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 4px 4px 0 #c41e3a, 0 0 30px rgba(255,200,0,0.5); letter-spacing: 2px; }
+    .title-box h2 { font-size: 22px; font-weight: 800; color: #e74c3c; letter-spacing: 4px; margin-top: 4px; }
+    .title-box p { font-size: 13px; color: #8a9ba8; margin-top: 8px; letter-spacing: 1px; }
+    
+    .card-panel {
+      background: rgba(18, 24, 38, 0.95); border: 2px solid rgba(40, 110, 190, 0.8);
+      border-radius: 10px; padding: 30px 40px; display: flex; flex-direction: column; gap: 14px;
+      min-width: 340px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    }
+    
+    .btn {
+      background: #202b42; border: 2px solid #3b5078; border-radius: 6px; color: #fff;
+      font-size: 16px; font-weight: 800; padding: 12px 20px; cursor: pointer; transition: all 0.15s;
+      text-align: center; letter-spacing: 0.5px;
+    }
+    .btn:hover { background: #2f4066; border-color: #5bc0de; transform: translateY(-2px); }
+    .btn-primary { background: #c41e3a; border-color: #ffd700; font-size: 18px; color: #fff; }
+    .btn-primary:hover { background: #e02444; border-color: #fff; box-shadow: 0 0 15px rgba(220,30,50,0.6); }
+    
+    /* GARAGE UI OVERLAY */
+    #garage-ui {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50;
+      display: none; pointer-events: none;
+    }
+    .garage-top { position: absolute; top: 25px; left: 50%; transform: translateX(-50%); text-align: center; }
+    .garage-top h2 { font-size: 20px; color: #8a9ba8; letter-spacing: 2px; }
+    .garage-top h1 { font-size: 34px; color: #ffd700; font-weight: 900; margin-top: 4px; text-shadow: 0 0 15px rgba(255,200,0,0.5); }
+    
+    .garage-side {
+      position: absolute; top: 50%; right: 40px; transform: translateY(-50%);
+      width: 320px; background: rgba(12, 16, 24, 0.9); border: 2px solid rgba(40, 110, 190, 0.8);
+      border-radius: 8px; padding: 20px; pointer-events: auto;
+    }
+    .garage-bottom {
+      position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 20px; align-items: center; pointer-events: auto;
+    }
+    
+    /* RESULTS SCREEN */
+    #results-screen { display: none; z-index: 110; }
+    .results-card { width: 560px; max-width: 90vw; }
+    .rank-circle { font-size: 80px; font-weight: 900; color: #ffd700; text-align: center; margin: 10px 0; text-shadow: 0 0 25px rgba(255,200,0,0.6); }
+    .stats-table { font-size: 14px; line-height: 1.8; color: #cde; background: #111624; padding: 16px; border-radius: 6px; margin-bottom: 15px; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <!-- MAIN HUD -->
+  <div id="hud">
+    <!-- UPPER-LEFT GPS -->
+    <div class="gps-panel">
+      <div class="gps-canvas-wrap">
+        <canvas id="gps-canvas" width="90" height="186"></canvas>
+      </div>
+      <div class="gps-details">
+        <div class="gps-title">GPS NAVIGATION</div>
+        <div class="gps-maneuver" id="gps-maneuver">NEXT: EXIT 42B</div>
+        <div class="gps-dist" id="gps-dist">IN 1,420 FT</div>
+        <div class="gps-meta" id="gps-meta">REMAINING: 1.8 MI<br>ETA: 02:15</div>
+        <div class="gps-timer-box">
+          <div class="gps-timer-title">DELIVERY WINDOW</div>
+          <div class="gps-timer-val" id="gps-timer">05:00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPPER-RIGHT POLICE HEAT -->
+    <div class="police-panel">
+      <div class="police-title">HIGHWAY PATROL HEAT</div>
+      <div class="police-stars" id="police-stars">☆☆☆☆☆</div>
+      <div class="police-status" id="police-status">0 ★ CALM</div>
+    </div>
+
+    <!-- CENTER NOTIFICATIONS -->
+    <div id="maneuver-banner">➔ RIGHT EXIT 42B — 800 FT ➔</div>
+    <div id="retaliation-banner">
+      <h2>⚡ RETALIATION MODE ACTIVE ⚡</h2>
+      <p id="retaliation-timer">12.0s REMAINING | LEFT CLICK TO FIRE</p>
+    </div>
+
+    <!-- LOWER-CENTER TELEMETRY -->
+    <div class="telemetry-cluster">
+      <div class="speed-block">
+        <div class="speed-num" id="speed-num">0</div>
+        <div class="speed-unit">MPH</div>
+      </div>
+      <div class="gear-rpm-block">
+        <div class="gear-label" id="gear-label">GEAR 1</div>
+        <div class="rpm-bar-wrap">
+          <div class="rpm-bar-fill" id="rpm-bar-fill"></div>
+        </div>
+        <div class="rpm-text" id="rpm-text">850 RPM</div>
+      </div>
+      <div class="gauges-block">
+        <div>
+          <div class="gauge-row"><span>TRUCK:</span><span id="truck-val">100%</span></div>
+          <div class="bar-bg"><div class="truck-bar" id="truck-bar"></div></div>
+        </div>
+        <div>
+          <div class="gauge-row"><span>CARGO:</span><span id="cargo-val">100%</span></div>
+          <div class="bar-bg"><div class="cargo-bar" id="cargo-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROAD RAGE METER -->
+    <div class="rage-container">
+      <div class="rage-bar-wrap">
+        <div class="rage-bar-fill" id="rage-bar-fill"></div>
+      </div>
+      <div class="rage-labels">
+        <div class="rage-tier" id="rage-tier">ROAD RAGE: CALM [0%]</div>
+        <div class="rage-prompt" id="rage-prompt">⚡ RETALIATION READY — PRESS SPACE TO UNLEASH WEAPONS ⚡</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN MENU SCREEN -->
+  <div id="main-menu" class="menu-screen">
+    <div class="title-box">
+      <h1>VOXEL HAULER</h1>
+      <h2>ASPHALT RETALIATION</h2>
+      <p>3D RETRO-MODERN ARCADE MOTOR HAULING</p>
+    </div>
+    <div class="card-panel">
+      <button class="btn btn-primary" onclick="startGame()">START DELIVERY ▶</button>
+      <button class="btn" onclick="openGarage()">TRUCK GARAGE 🛠</button>
+      <button class="btn" onclick="toggleInstructions()">HOW TO PLAY 📖</button>
+    </div>
+  </div>
+
+  <!-- INSTRUCTIONS MODAL -->
+  <div id="instructions-modal" class="menu-screen" style="display: none; background: rgba(8,10,16,0.95);">
+    <div class="card-panel" style="max-width: 500px;">
+      <h2 style="color: #ffd700; text-align: center; margin-bottom: 10px;">GAMEPLAY CONTROLS</h2>
+      <div style="font-size: 13px; line-height: 1.8; color: #cde;">
+        <p>• <b>W / S:</b> Accelerate / Heavy Pneumatic Brakes (Top speed: 105 MPH)</p>
+        <p>• <b>A / D:</b> Steer Left / Right with speed-sensitive inertia</p>
+        <p>• <b>SPACE:</b> Activate Retaliation Mode at 100% Road Rage</p>
+        <p>• <b>Left Mouse:</b> Fire Dual Machine-Gun Turrets at targets</p>
+        <p>• <b>TAB:</b> Cycle targeting lock-on</p>
+        <p>• <b>C:</b> Toggle camera chase distance</p>
+        <p>• <b>R:</b> Recover stuck or overturned truck</p>
+      </div>
+      <button class="btn" style="margin-top: 15px;" onclick="toggleInstructions()">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- GARAGE UI OVERLAY -->
+  <div id="garage-ui">
+    <div class="garage-top">
+      <h2>TRUCK SELECTION GARAGE</h2>
+      <h1 id="garage-truck-name">REDLINE</h1>
+    </div>
+    <div class="garage-side">
+      <h3 style="color:#ffd700; font-size:16px; margin-bottom:8px;">SPECIFICATIONS</h3>
+      <p id="garage-desc" style="font-size:12px; color:#abc; line-height:1.5; margin-bottom:12px;"></p>
+      <div style="font-size:12px; line-height:1.8; color:#cde;">
+        • CHASSIS: Class 8 Semi-Tractor<br>
+        • TOP SPEED: 105 MPH<br>
+        • POWERTRAIN: V12 Twin Turbo Diesel<br>
+        • CARGO: 53ft Articulated Dry Van<br>
+        • WEAPONS: Dual Cab Retaliation Turrets
+      </div>
+    </div>
+    <div class="garage-bottom">
+      <button class="btn" onclick="prevTruck()">&lt; PREV TRUCK</button>
+      <button class="btn" onclick="nextTruck()">NEXT TRUCK &gt;</button>
+      <button class="btn btn-primary" onclick="startGameFromGarage()">CONFIRM &amp; DRIVE ▶</button>
+      <button class="btn" onclick="closeGarage()">BACK</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="results-screen" class="menu-screen">
+    <div class="card-panel results-card">
+      <h2 id="results-status" style="text-align: center; color: #2ecc71;">DELIVERY SUCCESSFUL</h2>
+      <div class="rank-circle" id="results-rank">S</div>
+      <div class="stats-table" id="results-stats"></div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="restartGame()">RETRY RUN</button>
+        <button class="btn" style="flex:1;" onclick="goToGarageFromResults()">GARAGE</button>
+        <button class="btn" style="flex:1;" onclick="goToMenuFromResults()">MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- THREE.JS GAME ENGINE LOGIC -->
+  <script>
+    // --- AUDIO SYNTHESIZER ---
+    const AudioEngine = {
+      ctx: null,
+      engineNode: null,
+      engineGain: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+          this.startEngineSound();
+        }
+      },
+      startEngineSound() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(55, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        this.engineNode = osc;
+        this.engineGain = gain;
+      },
+      updateEnginePitch(speedRatio, throttle) {
+        if (!this.engineNode || !this.ctx) return;
+        const targetFreq = 50 + speedRatio * 85 + throttle * 25;
+        this.engineNode.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.1);
+      },
+      playShot() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      },
+      playExplosion() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(20, now + 0.6);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.6);
+      },
+      playBrakeHiss() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.4, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.15));
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.2, now);
+        src.connect(gain);
+        gain.connect(this.ctx.destination);
+        src.start(now);
+      },
+      playAlert() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.linearRampToValueAtTime(880, now + 0.2);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+    };
+
+    // --- TRUCK CONFIGURATION PRESETS ---
+    const TRUCK_PRESETS = [
+      {
+        id: "redline",
+        name: "REDLINE",
+        title: "Crimson Hauler",
+        primaryColor: 0xc41e3a,
+        secondaryColor: 0xeeeeff,
+        accentColor: 0xff3b30,
+        desc: "High-octane aggression. Crimson finish with mirror-polished chrome stack."
+      },
+      {
+        id: "blue_thunder",
+        name: "BLUE THUNDER",
+        title: "Electric Titan",
+        primaryColor: 0x0077be,
+        secondaryColor: 0x00ffff,
+        accentColor: 0x00e5ff,
+        desc: "Electric blue with high-voltage neon styling. Unstoppable torque."
+      },
+      {
+        id: "night_rider",
+        name: "NIGHT RIDER",
+        title: "Midnight Dreadnought",
+        primaryColor: 0x161618,
+        secondaryColor: 0x5a606d,
+        accentColor: 0xff4500,
+        desc: "Midnight black with stealth gunmetal plating. Shadows on the asphalt."
+      }
+    ];
+
+    let currentTruckIdx = 0;
+    let gameState = 'MENU'; // 'MENU', 'GARAGE', 'PLAYING', 'RESULTS'
+
+    // --- GAME ENGINE SETUP ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x141828);
+    scene.fog = new THREE.FogExp2(0x141828, 0.0035);
+
+    const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+
+    // Warm Sunset Golden-Hour Lighting
+    const hemiLight = new THREE.HemisphereLight(0xffeedd, 0x1a2035, 0.8);
+    scene.add(hemiLight);
+
+    const sunLight = new THREE.DirectionalLight(0xffaa55, 1.8);
+    sunLight.position.set(40, 60, 50);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 1024;
+    sunLight.shadow.mapSize.height = 1024;
+    scene.add(sunLight);
+
+    // --- VOXEL MODEL BUILDER ---
+    function createBox(w, h, d, color, metal = 0.2, rough = 0.7, emissive = 0x000000) {
+      const geo = new THREE.BoxGeometry(w, h, d);
+      const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        metalness: metal,
+        roughness: rough,
+        emissive: emissive,
+        emissiveIntensity: emissive ? 1.5 : 0
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    }
+
+    function buildTruckCab(preset) {
+      const root = new THREE.Group();
+      
+      // Chassis
+      const frame = createBox(2.4, 0.4, 7.2, 0x222428, 0.7, 0.5);
+      frame.position.set(0, 0.45, 0.2);
+      root.add(frame);
+      
+      // Bumper
+      const bumper = createBox(2.6, 0.5, 0.4, preset.secondaryColor, 0.9, 0.2);
+      bumper.position.set(0, 0.45, 3.8);
+      root.add(bumper);
+      
+      // Hood
+      const hood = createBox(2.2, 1.3, 2.5, preset.primaryColor, 0.3, 0.6);
+      hood.position.set(0, 1.3, 2.4);
+      root.add(hood);
+      
+      // Chrome Grille
+      const grille = createBox(2.0, 1.2, 0.2, preset.secondaryColor, 0.95, 0.1);
+      grille.position.set(0, 1.25, 3.7);
+      root.add(grille);
+      
+      // Headlights
+      const hl1 = createBox(0.4, 0.25, 0.1, 0xfff0aa, 0, 0.2, 0xffea88);
+      hl1.position.set(-0.9, 0.8, 3.75);
+      root.add(hl1);
+      const hl2 = createBox(0.4, 0.25, 0.1, 0xfff0aa, 0, 0.2, 0xffea88);
+      hl2.position.set(0.9, 0.8, 3.75);
+      root.add(hl2);
+      
+      // Cabin & Sleeper
+      const cabin = createBox(2.4, 2.1, 3.2, preset.primaryColor, 0.3, 0.6);
+      cabin.position.set(0, 2.1, -0.4);
+      root.add(cabin);
+      
+      // Windshield
+      const ws = createBox(2.1, 0.9, 0.1, 0x1a2b3c, 0.1, 0.1);
+      ws.position.set(0, 2.3, 1.22);
+      root.add(ws);
+      
+      // Dual Chrome Exhaust Stacks
+      [-1.35, 1.35].forEach(x => {
+        const stack = createBox(0.22, 3.2, 0.22, preset.secondaryColor, 0.95, 0.1);
+        stack.position.set(x, 2.8, -1.8);
+        root.add(stack);
+      });
+      
+      // Fuel Tanks
+      [-1.25, 1.25].forEach(x => {
+        const tank = createBox(0.5, 0.5, 2.2, preset.secondaryColor, 0.9, 0.2);
+        tank.position.set(x, 0.55, 0.8);
+        root.add(tank);
+      });
+      
+      // Wheels
+      const wheelPositions = [
+        [-1.2, 0.52, 2.6], [1.2, 0.52, 2.6],
+        [-1.2, 0.52, -1.7], [1.2, 0.52, -1.7],
+        [-1.2, 0.52, -2.9], [1.2, 0.52, -2.9]
+      ];
+      wheelPositions.forEach(([x, y, z]) => {
+        const tire = createBox(0.38, 0.85, 0.85, 0x151518, 0.1, 0.9);
+        tire.position.set(x, y, z);
+        root.add(tire);
+      });
+
+      // Roof Turrets (Hidden / Deployed)
+      const turretLeft = buildTurretPod(preset);
+      turretLeft.position.set(-0.65, 3.15, -0.4);
+      turretLeft.name = "TurretL";
+      turretLeft.visible = false;
+      root.add(turretLeft);
+
+      const turretRight = buildTurretPod(preset);
+      turretRight.position.set(0.65, 3.15, -0.4);
+      turretRight.name = "TurretR";
+      turretRight.visible = false;
+      root.add(turretRight);
+
+      return root;
+    }
+
+    function buildTurretPod(preset) {
+      const pod = new THREE.Group();
+      const base = createBox(0.45, 0.25, 0.5, 0x2c3545, 0.8, 0.3);
+      base.position.set(0, 0.12, 0);
+      pod.add(base);
+
+      const housing = createBox(0.4, 0.35, 0.65, 0x1a1e28, 0.7, 0.4);
+      housing.position.set(0, 0.38, 0.05);
+      pod.add(housing);
+
+      // Barrels
+      [-0.12, 0.12].forEach(bx => {
+        const barrel = createBox(0.08, 0.08, 0.8, 0xd0d5dd, 0.95, 0.1);
+        barrel.position.set(bx, 0.38, 0.6);
+        pod.add(barrel);
+      });
+      return pod;
+    }
+
+    function buildTrailer(preset) {
+      const root = new THREE.Group();
+      const box = createBox(2.5, 2.9, 12.0, 0xe2e5ea, 0.7, 0.4);
+      box.position.set(0, 2.3, -4.5);
+      root.add(box);
+
+      // Racing / Logistics Stripe
+      [-1.28, 1.28].forEach(sx => {
+        const stripe = createBox(0.06, 0.45, 11.0, preset.primaryColor, 0.4, 0.5);
+        stripe.position.set(sx, 2.2, -4.5);
+        root.add(stripe);
+      });
+
+      // Wheels
+      const trailerWheels = [
+        [-1.25, 0.52, -8.5], [1.25, 0.52, -8.5],
+        [-1.25, 0.52, -9.7], [1.25, 0.52, -9.7]
+      ];
+      trailerWheels.forEach(([x, y, z]) => {
+        const tire = createBox(0.45, 0.85, 0.85, 0x151518, 0.1, 0.9);
+        tire.position.set(x, y, z);
+        root.add(tire);
+      });
+
+      // Hazard Bumper
+      const bumper = createBox(2.5, 0.35, 0.3, 0xf1c40f, 0.4, 0.5);
+      bumper.position.set(0, 0.55, -10.55);
+      root.add(bumper);
+
+      return root;
+    }
+
+    function buildTrafficCar(type, color) {
+      const root = new THREE.Group();
+      if (type === 'Police') {
+        const body = createBox(1.9, 0.6, 4.6, 0x111114, 0.4, 0.5);
+        body.position.set(0, 0.45, 0); root.add(body);
+        const cab = createBox(1.5, 0.65, 2.3, 0xf0f0f5, 0.3, 0.4);
+        cab.position.set(0, 1.05, -0.2); root.add(cab);
+        const lightbar = createBox(0.8, 0.12, 0.2, 0xff0022, 0, 0.1, 0xff0033);
+        lightbar.position.set(0, 1.45, -0.2); root.add(lightbar);
+        root.userData.lightbar = lightbar;
+      } else if (type === 'Sports') {
+        const body = createBox(1.9, 0.4, 4.2, color, 0.7, 0.3);
+        body.position.set(0, 0.35, 0); root.add(body);
+        const cab = createBox(1.4, 0.45, 1.8, 0x111520, 0.2, 0.1);
+        cab.position.set(0, 0.75, -0.3); root.add(cab);
+      } else {
+        const body = createBox(1.8, 0.55, 4.4, color, 0.4, 0.5);
+        body.position.set(0, 0.45, 0); root.add(body);
+        const cab = createBox(1.5, 0.65, 2.2, 0x202838, 0.2, 0.1);
+        cab.position.set(0, 1.0, -0.2); root.add(cab);
+      }
+      return root;
+    }
+
+    // --- HIGHWAY & ENVIRONMENT SETUP ---
+    const highwayGroup = new THREE.Group();
+    scene.add(highwayGroup);
+
+    // 4-Lane Asphalt Roadbed (2400 meters long)
+    const ROAD_WIDTH = 16.0;
+    const HIGHWAY_LENGTH = 2400.0;
+    const road = createBox(ROAD_WIDTH, 0.4, HIGHWAY_LENGTH, 0x26282e, 0.1, 0.9);
+    road.position.set(0, -0.2, HIGHWAY_LENGTH * 0.5 - 50);
+    highwayGroup.add(road);
+
+    // Concrete Barriers
+    [-8.4, 8.4].forEach(bx => {
+      const barrier = createBox(0.6, 1.1, HIGHWAY_LENGTH, 0xa0a5aa, 0.1, 0.9);
+      barrier.position.set(bx, 0.55, HIGHWAY_LENGTH * 0.5 - 50);
+      highwayGroup.add(barrier);
+    });
+
+    // Exit 42B Ramp (Splits off right at Z = 1650 to 2250)
+    const ramp = createBox(8.0, 0.4, 600.0, 0x26282e, 0.1, 0.9);
+    ramp.position.set(14.0, -0.2, 1950.0);
+    ramp.rotation.y = -0.08;
+    highwayGroup.add(ramp);
+
+    // Glowing Yellow Roadway Exit Chevrons (Scene B Reference)
+    [1680, 1720, 1760, 1800, 1840, 1880].forEach(z => {
+      const chevron = createBox(1.2, 0.05, 3.0, 0xffcc00, 0, 0.2, 0xffaa00);
+      chevron.position.set(5.6, 0.05, z);
+      chevron.rotation.y = -0.3;
+      highwayGroup.add(chevron);
+    });
+
+    // Streetlights every 55 meters
+    for (let z = 40; z < HIGHWAY_LENGTH - 60; z += 55) {
+      [-9.2, 9.2].forEach(sx => {
+        const pole = createBox(0.3, 7.0, 0.3, 0x5a6068);
+        pole.position.set(sx, 3.5, z);
+        highwayGroup.add(pole);
+        const lamp = createBox(0.5, 0.2, 0.8, 0xffea88, 0, 0.1, 0xffaa33);
+        lamp.position.set(sx - Math.sign(sx)*1.2, 6.9, z);
+        highwayGroup.add(lamp);
+      });
+    }
+
+    // Riverside Logistics Center Destination Hub (Z = 2300)
+    const terminal = createBox(50, 12, 35, 0x3a455a, 0.2, 0.7);
+    terminal.position.set(0, 6, 2380);
+    highwayGroup.add(terminal);
+
+    const deliveryBay = createBox(16, 0.08, 28, 0xffcc00, 0, 0.2, 0xffaa00);
+    deliveryBay.position.set(0, 0.04, 2325);
+    highwayGroup.add(deliveryBay);
+
+    // Skyline Buildings
+    for (let z = 0; z < HIGHWAY_LENGTH; z += 60) {
+      const hL = 20 + Math.random() * 40;
+      const bL = createBox(22, hL, 26, 0x1a2233);
+      bL.position.set(-45, hL/2, z);
+      highwayGroup.add(bL);
+
+      const hR = 15 + Math.random() * 30;
+      const bR = createBox(25, hR, 26, 0x182030);
+      bR.position.set(48, hR/2, z);
+      highwayGroup.add(bR);
+    }
+
+    // --- PLAYER TRUCK RIG ---
+    let playerCab = null;
+    let playerTrailer = null;
+    let turntableTruck = null;
+
+    function buildPlayerTruck(idx) {
+      if (playerCab) scene.remove(playerCab);
+      if (playerTrailer) scene.remove(playerTrailer);
+
+      const preset = TRUCK_PRESETS[idx];
+      playerCab = buildTruckCab(preset);
+      playerTrailer = buildTrailer(preset);
+
+      scene.add(playerCab);
+      scene.add(playerTrailer);
+
+      playerCab.position.set(-1.875, 0, 15);
+      playerTrailer.position.set(-1.875, 0, 12.6);
+    }
+
+    buildPlayerTruck(0);
+
+    // --- GAMEPLAY STATE & VARIABLES ---
+    let truckSpeedMps = 0;
+    const MAX_SPEED_MPH = 105;
+    const MPH_TO_MPS = 0.44704;
+    const MPS_TO_MPH = 2.23694;
+    let truckHeading = 0;
+    let truckHealth = 100;
+    let cargoHealth = 100;
+    let roadRage = 0;
+    let policeHeat = 0;
+    let retaliationActive = false;
+    let retaliationTimer = 0;
+    let missionTimeLeft = 300;
+    let missionTimeElapsed = 0;
+    let vehiclesDisabled = 0;
+    let cleanDrivingScore = 1000;
+
+    const trafficCars = [];
+    const policeCruisers = [];
+    const projectiles = [];
+    const particles = [];
+
+    // Keys
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        tryActivateRetaliation();
+      }
+      if (e.key.toLowerCase() === 'r') recoverTruck();
+      if (e.key.toLowerCase() === 'c') toggleCamera();
+    });
+    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+    window.addEventListener('mousedown', e => {
+      if (gameState === 'PLAYING' && retaliationActive) fireRetaliationWeapon();
+    });
+
+    let cameraMode = 0; // 0: Normal, 1: Wide
+    function toggleCamera() { cameraMode = (cameraMode + 1) % 2; }
+
+    function recoverTruck() {
+      truckHeading = 0;
+      playerCab.rotation.y = 0;
+      playerTrailer.rotation.y = 0;
+      playerCab.position.x = -1.875;
+      truckSpeedMps = 0;
+      AudioEngine.playBrakeHiss();
+    }
+
+    function tryActivateRetaliation() {
+      if (roadRage >= 100 && !retaliationActive) {
+        retaliationActive = true;
+        retaliationTimer = 12.0;
+        AudioEngine.playAlert();
+        const tL = playerCab.getObjectByName('TurretL');
+        const tR = playerCab.getObjectByName('TurretR');
+        if (tL) tL.visible = true;
+        if (tR) tR.visible = true;
+      }
+    }
+
+    function fireRetaliationWeapon() {
+      AudioEngine.playShot();
+      const pos = playerCab.position.clone().add(new THREE.Vector3(0, 3.4, 3.0));
+      const proj = createBox(0.16, 0.16, 1.4, TRUCK_PRESETS[currentTruckIdx].accentColor, 0, 0.1, 0xffffff);
+      proj.position.copy(pos);
+      scene.add(proj);
+      projectiles.push(proj);
+
+      if (policeHeat < 5 && Math.random() < 0.25) policeHeat = Math.min(5, policeHeat + 1);
+    }
+
+    // --- TRAFFIC SPAWNER ---
+    const LANES_X = [-5.625, -1.875, 1.875, 5.625];
+    const CAR_COLORS = [0xd63031, 0x0984e3, 0xfdcb6e, 0x00b894, 0x636e72, 0xffffff];
+
+    function spawnTrafficAhead(minZ, maxZ) {
+      const z = playerCab.position.z + minZ + Math.random() * (maxZ - minZ);
+      if (z > 2250) return;
+      const lx = LANES_X[Math.floor(Math.random() * LANES_X.length)];
+      const type = Math.random() < 0.2 ? 'Sports' : 'Sedan';
+      const col = CAR_COLORS[Math.floor(Math.random() * CAR_COLORS.length)];
+      const car = buildTrafficCar(type, col);
+      car.position.set(lx, 0, z);
+      car.userData = {
+        speedMps: (52 + Math.random() * 20) * MPH_TO_MPS,
+        health: 70,
+        isAggressive: Math.random() < 0.35,
+        laneX: lx,
+        type: type
+      };
+      scene.add(car);
+      trafficCars.push(car);
+    }
+
+    // Populate initial traffic
+    for (let i = 0; i < 14; i++) spawnTrafficAhead(30, 180);
+
+    function spawnPoliceCruiser() {
+      const cruiser = buildTrafficCar('Police', 0xffffff);
+      cruiser.position.set(LANES_X[Math.floor(Math.random() * LANES_X.length)], 0, playerCab.position.z - 40);
+      cruiser.userData = {
+        speedMps: 75 * MPH_TO_MPS,
+        health: 100,
+        type: 'Police'
+      };
+      scene.add(cruiser);
+      policeCruisers.push(cruiser);
+    }
+
+    function createExplosion(pos) {
+      AudioEngine.playExplosion();
+      vehiclesDisabled++;
+      for (let i = 0; i < 22; i++) {
+        const size = 0.3 + Math.random() * 0.3;
+        const p = createBox(size, size, size, Math.random() < 0.5 ? 0xff4500 : 0x333333, 0.5, 0.5, 0xff6600);
+        p.position.copy(pos);
+        scene.add(p);
+        particles.push({
+          mesh: p,
+          vel: new THREE.Vector3((Math.random()-0.5)*20, 10 + Math.random()*15, (Math.random()-0.5)*20),
+          life: 1.8
+        });
+      }
+    }
+
+    // --- GAME LOOP ---
+    let lastTime = performance.now();
+    let brakeHissCooldown = 0;
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const delta = Math.min(0.1, (now - lastTime) / 1000);
+      lastTime = now;
+
+      if (gameState === 'GARAGE' && turntableTruck) {
+        turntableTruck.rotation.y += delta * 0.4;
+      }
+
+      if (gameState === 'PLAYING') {
+        updateGameplay(delta);
+      }
+
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    function updateGameplay(delta) {
+      missionTimeElapsed += delta;
+      missionTimeLeft = Math.max(0, missionTimeLeft - delta);
+      if (missionTimeLeft <= 0) endGame(false, "TIME EXPIRED — Missed Delivery Deadline");
+
+      // Controls
+      let throttle = (keys['w'] || keys['arrowup']) ? 1 : 0;
+      let brake = (keys['s'] || keys['arrowdown']) ? 1 : 0;
+      let steer = 0;
+      if (keys['a'] || keys['arrowleft']) steer += 1;
+      if (keys['d'] || keys['arrowright']) steer -= 1;
+
+      // Speed calculations
+      const maxMps = MAX_SPEED_MPH * MPH_TO_MPS;
+      if (throttle) {
+        truckSpeedMps = Math.min(maxMps, truckSpeedMps + 18.0 * delta);
+      } else if (brake) {
+        if (truckSpeedMps > 0.5) {
+          truckSpeedMps = Math.max(0, truckSpeedMps - 34.0 * delta);
+          brakeHissCooldown -= delta;
+          if (brakeHissCooldown <= 0) {
+            AudioEngine.playBrakeHiss();
+            brakeHissCooldown = 1.8;
+          }
+        } else {
+          truckSpeedMps = Math.max(-20 * MPH_TO_MPS, truckSpeedMps - 12.0 * delta);
+        }
+      } else {
+        truckSpeedMps = Math.max(0, truckSpeedMps - 4.5 * delta);
+      }
+
+      // Steering
+      const speedRatio = truckSpeedMps / maxMps;
+      const steerFactor = 1.6 * (1.0 - speedRatio * 0.45);
+      truckHeading += steer * steerFactor * delta * (truckSpeedMps > 0 ? 1 : 0);
+      playerCab.rotation.y = truckHeading;
+
+      // Forward motion
+      playerCab.position.z += Math.cos(truckHeading) * truckSpeedMps * delta;
+      playerCab.position.x += Math.sin(truckHeading) * truckSpeedMps * delta;
+      playerCab.position.x = Math.max(-7.4, Math.min(7.4, playerCab.position.x));
+
+      // Trailer hitch articulation
+      const hitchPos = playerCab.position.clone().add(new THREE.Vector3(-Math.sin(truckHeading)*2.4, 0, -Math.cos(truckHeading)*2.4));
+      playerTrailer.position.copy(hitchPos);
+      playerTrailer.rotation.y = THREE.MathUtils.lerp(playerTrailer.rotation.y, truckHeading, delta * 8.0);
+
+      // Camera Follow
+      const camOffset = cameraMode === 0 ? new THREE.Vector3(0, 4.5, -11.0) : new THREE.Vector3(0, 6.0, -15.0);
+      if (retaliationActive) { camOffset.z -= 1.8; camOffset.y += 0.8; }
+      const desiredCamPos = playerCab.position.clone().add(new THREE.Vector3(0, camOffset.y, camOffset.z));
+      camera.position.lerp(desiredCamPos, delta * 7.0);
+      camera.lookAt(playerCab.position.clone().add(new THREE.Vector3(0, 1.5, 8.0)));
+
+      // Audio engine update
+      AudioEngine.updateEnginePitch(speedRatio, throttle);
+
+      // Retaliation Timer
+      if (retaliationActive) {
+        retaliationTimer -= delta;
+        if (retaliationTimer <= 0) {
+          retaliationActive = false;
+          roadRage = 0;
+          const tL = playerCab.getObjectByName('TurretL');
+          const tR = playerCab.getObjectByName('TurretR');
+          if (tL) tL.visible = false;
+          if (tR) tR.visible = false;
+        }
+      }
+
+      // Update Projectiles
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        p.position.z += 160.0 * delta;
+        // Hit check
+        trafficCars.concat(policeCruisers).forEach(car => {
+          if (car.position.distanceTo(p.position) < 2.5) {
+            car.userData.health -= 40;
+            if (car.userData.health <= 0) {
+              createExplosion(car.position);
+              scene.remove(car);
+            }
+          }
+        });
+        if (p.position.z > playerCab.position.z + 100) {
+          scene.remove(p);
+          projectiles.splice(i, 1);
+        }
+      }
+
+      // Update Traffic Cars
+      for (let i = trafficCars.length - 1; i >= 0; i--) {
+        const car = trafficCars[i];
+        car.position.z += car.userData.speedMps * delta;
+
+        // Proximity Road Rage Triggers
+        const distToTruck = car.position.distanceTo(playerCab.position);
+        if (distToTruck < 14.0 && !retaliationActive) {
+          roadRage = Math.min(100, roadRage + 15.0 * delta);
+        }
+
+        // Collision with truck
+        if (distToTruck < 3.2) {
+          truckHealth = Math.max(0, truckHealth - 12);
+          cargoHealth = Math.max(0, cargoHealth - 8);
+          roadRage = Math.min(100, roadRage + 20);
+          createExplosion(car.position);
+          scene.remove(car);
+          trafficCars.splice(i, 1);
+          if (truckHealth <= 0) endGame(false, "TRUCK TOTALED — Severe Collisions");
+          continue;
+        }
+
+        // Despawn
+        if (car.position.z < playerCab.position.z - 40 || car.position.z > playerCab.position.z + 180) {
+          scene.remove(car);
+          trafficCars.splice(i, 1);
+          spawnTrafficAhead(60, 140);
+        }
+      }
+
+      // Police Pursuit Spawning
+      if (policeHeat >= 3 && policeCruisers.length === 0) {
+        spawnPoliceCruiser();
+      }
+
+      // Update Police Cruisers
+      for (let i = policeCruisers.length - 1; i >= 0; i--) {
+        const cr = policeCruisers[i];
+        cr.position.z += 105 * MPH_TO_MPS * delta;
+        cr.position.x = THREE.MathUtils.lerp(cr.position.x, playerCab.position.x, delta * 3.0);
+        if (cr.userData.lightbar) cr.userData.lightbar.material.emissiveIntensity = Math.sin(now * 0.02) > 0 ? 3 : 0.2;
+      }
+
+      // Update Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= delta;
+        p.vel.y -= 25.0 * delta;
+        p.mesh.position.addScaledVector(p.vel, delta);
+        if (p.mesh.position.y < 0.2) { p.mesh.position.y = 0.2; p.vel.y *= -0.4; }
+        if (p.life <= 0) {
+          scene.remove(p.mesh);
+          particles.splice(i, 1);
+        }
+      }
+
+      // Check Destination Trigger (Z >= 2300)
+      if (playerCab.position.z >= 2315) {
+        endGame(true, "DELIVERY SUCCESSFUL");
+      }
+
+      updateHUD();
+    }
+
+    function updateHUD() {
+      const mph = Math.abs(Math.round(truckSpeedMps * MPS_TO_MPH));
+      document.getElementById('speed-num').textContent = mph;
+
+      // Gear calculation
+      let gear = 1;
+      if (mph > 88) gear = 6; else if (mph > 70) gear = 5; else if (mph > 50) gear = 4;
+      else if (mph > 32) gear = 3; else if (mph > 15) gear = 2;
+      document.getElementById('gear-label').textContent = "GEAR " + gear;
+      document.getElementById('rpm-text').textContent = (850 + Math.round((mph % 20) * 65)) + " RPM";
+      document.getElementById('rpm-bar-fill').style.width = Math.min(100, (mph / 105) * 100) + '%';
+
+      document.getElementById('truck-val').textContent = Math.round(truckHealth) + '%';
+      document.getElementById('truck-bar').style.width = truckHealth + '%';
+      document.getElementById('cargo-val').textContent = Math.round(cargoHealth) + '%';
+      document.getElementById('cargo-bar').style.width = cargoHealth + '%';
+
+      // GPS
+      const distToExit = Math.max(0, 1800 - playerCab.position.z);
+      const distToDest = Math.max(0, 2300 - playerCab.position.z);
+      document.getElementById('gps-dist').textContent = "IN " + Math.round(distToExit * 3.28) + " FT";
+      document.getElementById('gps-meta').innerHTML = "REMAINING: " + (distToDest / 1609).toFixed(1) + " MI<br>ETA: 01:45";
+
+      const mins = Math.floor(missionTimeLeft / 60);
+      const secs = Math.floor(missionTimeLeft % 60);
+      document.getElementById('gps-timer').textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+      // Maneuver Banner
+      const mb = document.getElementById('maneuver-banner');
+      if (playerCab.position.z >= 1450 && playerCab.position.z <= 1850) {
+        mb.style.display = 'block';
+        mb.textContent = `➔ RIGHT EXIT 42B — ${Math.round(distToExit * 3.28)} FT ➔`;
+      } else {
+        mb.style.display = 'none';
+      }
+
+      // Retaliation Banner
+      const rb = document.getElementById('retaliation-banner');
+      if (retaliationActive) {
+        rb.style.display = 'block';
+        document.getElementById('retaliation-timer').textContent = `${retaliationTimer.toFixed(1)}s REMAINING | LEFT CLICK TO FIRE`;
+      } else {
+        rb.style.display = 'none';
+      }
+
+      // Police Stars
+      let stars = "";
+      for (let i = 0; i < 5; i++) stars += i < policeHeat ? "★" : "☆";
+      const ps = document.getElementById('police-stars');
+      ps.textContent = stars;
+      ps.style.color = policeHeat >= 3 ? '#ff3333' : (policeHeat > 0 ? '#ffaa00' : '#444');
+      const titles = ["CALM", "WATCHED", "SEARCHING", "PURSUIT", "INTERCEPTORS", "LOCKDOWN"];
+      document.getElementById('police-status').textContent = `${policeHeat} ★ ${titles[policeHeat]}`;
+
+      // Rage Meter
+      document.getElementById('rage-bar-fill').style.width = roadRage + '%';
+      const rp = document.getElementById('rage-prompt');
+      if (roadRage >= 100 && !retaliationActive) {
+        rp.style.display = 'block';
+        document.getElementById('rage-tier').textContent = "ROAD RAGE: RETALIATION READY! [100%]";
+      } else {
+        rp.style.display = 'none';
+        let tier = "CALM";
+        if (roadRage > 75) tier = "CRITICAL"; else if (roadRage > 50) tier = "FURIOUS"; else if (roadRage > 25) tier = "ANNOYED";
+        document.getElementById('rage-tier').textContent = `ROAD RAGE: ${tier} [${Math.round(roadRage)}%]`;
+      }
+
+      drawGPSMinimap();
+    }
+
+    function drawGPSMinimap() {
+      const cvs = document.getElementById('gps-canvas');
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width, h = cvs.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Road background line
+      ctx.strokeStyle = '#222838';
+      ctx.lineWidth = 14;
+      ctx.beginPath(); ctx.moveTo(w*0.45, h - 10); ctx.lineTo(w*0.45, 15); ctx.stroke();
+
+      // Blue active GPS ribbon
+      ctx.strokeStyle = '#0088ff';
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(w*0.45, h - 10); ctx.lineTo(w*0.45, 15); ctx.stroke();
+
+      // Exit branch
+      ctx.strokeStyle = '#ffcc00';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(w*0.45, h * 0.32); ctx.lineTo(w - 15, 20); ctx.stroke();
+
+      // Destination indicator
+      ctx.fillStyle = '#2ecc71';
+      ctx.beginPath(); ctx.arc(w - 15, 20, 5, 0, Math.PI*2); ctx.fill();
+
+      // Truck icon
+      const ratio = Math.min(1, playerCab.position.z / 2300);
+      const ty = (h - 10) - ratio * (h - 25);
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(w*0.45 - 4, ty - 6, 8, 12);
+    }
+
+    // --- UI FLOW FUNCTIONS ---
+    function startGame() {
+      AudioEngine.init();
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('hud').style.display = 'block';
+      gameState = 'PLAYING';
+      recoverTruck();
+    }
+
+    function openGarage() {
+      AudioEngine.init();
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('garage-ui').style.display = 'block';
+      gameState = 'GARAGE';
+
+      if (!turntableTruck) {
+        turntableTruck = new THREE.Group();
+        scene.add(turntableTruck);
+      }
+      updateGarageView();
+      camera.position.set(-10, 5, 15);
+      camera.lookAt(0, 2, 0);
+    }
+
+    function updateGarageView() {
+      turntableTruck.clear();
+      const preset = TRUCK_PRESETS[currentTruckIdx];
+      const cab = buildTruckCab(preset);
+      cab.position.set(0, 0, 2.5);
+      const tr = buildTrailer(preset);
+      tr.position.set(0, 0, 0.2);
+      turntableTruck.add(cab);
+      turntableTruck.add(tr);
+
+      document.getElementById('garage-truck-name').textContent = preset.name;
+      document.getElementById('garage-desc').textContent = preset.desc;
+    }
+
+    function prevTruck() {
+      currentTruckIdx = (currentTruckIdx + TRUCK_PRESETS.length - 1) % TRUCK_PRESETS.length;
+      updateGarageView();
+      buildPlayerTruck(currentTruckIdx);
+    }
+
+    function nextTruck() {
+      currentTruckIdx = (currentTruckIdx + 1) % TRUCK_PRESETS.length;
+      updateGarageView();
+      buildPlayerTruck(currentTruckIdx);
+    }
+
+    function startGameFromGarage() {
+      document.getElementById('garage-ui').style.display = 'none';
+      scene.remove(turntableTruck);
+      turntableTruck = null;
+      startGame();
+    }
+
+    function closeGarage() {
+      document.getElementById('garage-ui').style.display = 'none';
+      document.getElementById('main-menu').style.display = 'flex';
+      if (turntableTruck) scene.remove(turntableTruck);
+      turntableTruck = null;
+      gameState = 'MENU';
+      camera.position.set(0, 6, -12);
+    }
+
+    function toggleInstructions() {
+      const m = document.getElementById('instructions-modal');
+      m.style.display = m.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function endGame(success, message) {
+      gameState = 'RESULTS';
+      document.getElementById('hud').style.display = 'none';
+      document.getElementById('results-screen').style.display = 'flex';
+
+      document.getElementById('results-status').textContent = message;
+      document.getElementById('results-status').style.color = success ? '#2ecc71' : '#e74c3c';
+
+      const timeScore = Math.round(missionTimeLeft * 25);
+      const cargoScore = Math.round(cargoHealth * 50);
+      const combatScore = vehiclesDisabled * 250;
+      const cleanBonus = Math.round(cleanDrivingScore * (cargoHealth / 100));
+      const policePenalty = policeHeat * 400;
+      const total = Math.max(0, timeScore + cargoScore + combatScore + cleanBonus - policePenalty);
+
+      let rank = 'D';
+      if (total >= 11000) rank = 'S';
+      else if (total >= 9000) rank = 'A';
+      else if (total >= 7000) rank = 'B';
+      else if (total >= 5000) rank = 'C';
+
+      document.getElementById('results-rank').textContent = rank;
+      document.getElementById('results-stats').innerHTML = `
+        • Time Remaining: ${Math.round(missionTimeLeft)}s (+${timeScore} pts)<br>
+        • Cargo Preserved: ${Math.round(cargoHealth)}% (+${cargoScore} pts)<br>
+        • Truck Condition: ${Math.round(truckHealth)}%<br>
+        • Vehicles Disabled: ${vehiclesDisabled} (+${combatScore} pts)<br>
+        • Clean Driving Bonus: +${cleanBonus} pts<br>
+        • Police Heat Penalty: -${policePenalty} pts<br>
+        <b style="color:#ffd700; font-size:16px;">TOTAL SCORE: ${total.toLocaleString()} PTS</b>
+      `;
+    }
+
+    function restartGame() {
+      document.getElementById('results-screen').style.display = 'none';
+      resetGameData();
+      startGame();
+    }
+
+    function goToGarageFromResults() {
+      document.getElementById('results-screen').style.display = 'none';
+      resetGameData();
+      openGarage();
+    }
+
+    function goToMenuFromResults() {
+      document.getElementById('results-screen').style.display = 'none';
+      resetGameData();
+      document.getElementById('main-menu').style.display = 'flex';
+      gameState = 'MENU';
+    }
+
+    function resetGameData() {
+      truckSpeedMps = 0;
+      truckHeading = 0;
+      truckHealth = 100;
+      cargoHealth = 100;
+      roadRage = 0;
+      policeHeat = 0;
+      retaliationActive = false;
+      retaliationTimer = 0;
+      missionTimeLeft = 300;
+      vehiclesDisabled = 0;
+      playerCab.position.set(-1.875, 0, 15);
+      playerTrailer.position.set(-1.875, 0, 12.6);
+      playerCab.rotation.y = 0;
+      playerTrailer.rotation.y = 0;
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

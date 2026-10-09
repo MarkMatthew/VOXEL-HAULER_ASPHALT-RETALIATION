@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/world/game_world.gd" id="1_world"]
+[ext_resource type="Script" path="res://src/world/highway.gd" id="2_highway"]
+[ext_resource type="Script" path="res://src/traffic/traffic_manager.gd" id="3_traffic"]
+[ext_resource type="Script" path="res://src/police/police_manager.gd" id="4_police"]
+[ext_resource type="PackedScene" path="res://src/player/truck.tscn" id="5_truck"]
+[ext_resource type="Script" path="res://src/player/chase_camera.gd" id="6_camera"]
+[ext_resource type="PackedScene" path="res://src/ui/hud.tscn" id="7_hud"]
+[ext_resource type="PackedScene" path="res://src/ui/pause_menu.tscn" id="8_pause"]
+[ext_resource type="PackedScene" path="res://src/ui/results_screen.tscn" id="9_results"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sunset"]
+sky_top_color = Color(0.2, 0.35, 0.65, 1)
+sky_horizon_color = Color(0.9, 0.55, 0.25, 1)
+ground_bottom_color = Color(0.12, 0.14, 0.18, 1)
+ground_horizon_color = Color(0.8, 0.45, 0.2, 1)
+
+[sub_resource type="Sky" id="Sky_sunset"]
+sky_material = SubResource("ProceduralSkyMaterial_sunset")
+
+[sub_resource type="Environment" id="Environment_sunset"]
+background_mode = 2
+sky = SubResource("Sky_sunset")
+ambient_light_source = 2
+ambient_light_color = Color(0.5, 0.45, 0.4, 1)
+ambient_light_energy = 0.8
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
+glow_intensity = 0.4
+glow_bloom = 0.2
+
+[node name="GameWorld" type="Node3D"]
+script = ExtResource("1_world")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sunset")
+
+[node name="SunLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 20, 30, 20)
+light_color = Color(1, 0.85, 0.65, 1)
+light_energy = 1.6
+shadow_enabled = true
+
+[node name="Highway" type="Node3D" parent="."]
+script = ExtResource("2_highway")
+
+[node name="TrafficManager" type="Node3D" parent="."]
+script = ExtResource("3_traffic")
+
+[node name="PoliceManager" type="Node3D" parent="."]
+script = ExtResource("4_police")
+
+[node name="Truck" parent="." instance=ExtResource("5_truck")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.875, 0.5, 12)
+
+[node name="ChaseCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, -1.875, 5, 0)
+script = ExtResource("6_camera")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" parent="CanvasLayer" instance=ExtResource("7_hud")]
+
+[node name="PauseMenu" parent="CanvasLayer" instance=ExtResource("8_pause")]
+
+[node name="ResultsScreen" parent="CanvasLayer" instance=ExtResource("9_results")]

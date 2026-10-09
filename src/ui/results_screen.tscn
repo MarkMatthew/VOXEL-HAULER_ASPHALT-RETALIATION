@@ -1,0 +1,163 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/results_screen.gd" id="1_results"]
+
+[node name="ResultsScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_results")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.08, 0.9)
+
+[node name="Card" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -240.0
+offset_right = 320.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StatusLabel" type="Label" parent="Card"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 18.0
+offset_bottom = 48.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.2, 0.9, 0.3, 1)
+text = "MISSION ACCOMPLISHED — CARGO DELIVERED"
+horizontal_alignment = 1
+
+[node name="RankBox" type="VBoxContainer" parent="Card"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 40.0
+offset_top = -140.0
+offset_right = 160.0
+offset_bottom = 20.0
+grow_vertical = 2
+alignment = 1
+
+[node name="RankHeader" type="Label" parent="Card/RankBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+text = "PERFORMANCE"
+horizontal_alignment = 1
+
+[node name="RankLetter" type="Label" parent="Card/RankBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 80
+theme_override_colors/font_color = Color(1, 0.85, 0.1, 1)
+text = "S"
+horizontal_alignment = 1
+
+[node name="ScoreBox" type="VBoxContainer" parent="Card"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 30.0
+offset_top = 30.0
+offset_right = 170.0
+offset_bottom = 90.0
+grow_vertical = 2
+alignment = 1
+
+[node name="ScoreHeader" type="Label" parent="Card/ScoreBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+text = "TOTAL SCORE"
+horizontal_alignment = 1
+
+[node name="ScoreValue" type="Label" parent="Card/ScoreBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "12,450 PTS"
+horizontal_alignment = 1
+
+[node name="StatsGrid" type="Panel" parent="Card"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -430.0
+offset_top = -150.0
+offset_right = -35.0
+offset_bottom = 95.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="DetailsText" type="Label" parent="Card/StatsGrid"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/line_spacing = 8
+theme_override_font_sizes/font_size = 14
+text = "• Time Elapsed: 02:35 (+1625 pts)
+• Cargo Preserved: 95% (+4750 pts)
+• Truck Condition: 88%
+• Clean Driving Bonus: +950 pts
+• Vehicles Disabled: 3 (+750 pts)
+• Police Heat Penalty: -0 pts"
+
+[node name="ButtonRow" type="HBoxContainer" parent="Card"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 35.0
+offset_top = -65.0
+offset_right = -35.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="RetryBtn" type="Button" parent="Card/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "RETRY RUN"
+
+[node name="GarageBtn" type="Button" parent="Card/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "TRUCK GARAGE"
+
+[node name="MenuBtn" type="Button" parent="Card/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "MAIN MENU"

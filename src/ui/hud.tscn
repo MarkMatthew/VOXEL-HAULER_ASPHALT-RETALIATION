@@ -1,0 +1,466 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://src/ui/gps_minimap.gd" id="2_minimap"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dark"]
+bg_color = Color(0.08, 0.09, 0.13, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.4, 0.6, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
+bg_color = Color(0.85, 0.7, 0.05, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_retaliation"]
+bg_color = Color(0.85, 0.1, 0.15, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.85, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rage_bg"]
+bg_color = Color(0.1, 0.12, 0.15, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.35, 0.4, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rage_fill"]
+bg_color = Color(0.9, 0.2, 0.1, 1)
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="GPSContainer" type="Panel" parent="."]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 270.0
+offset_bottom = 230.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dark")
+
+[node name="Minimap" type="Control" parent="GPSContainer"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 95.0
+offset_bottom = -10.0
+grow_vertical = 2
+script = ExtResource("2_minimap")
+
+[node name="Details" type="VBoxContainer" parent="GPSContainer"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -145.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -70.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="GpsTitle" type="Label" parent="GPSContainer/Details"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "GPS NAVIGATION"
+
+[node name="NextManeuverLabel" type="Label" parent="GPSContainer/Details"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "NEXT: EXIT 42B"
+
+[node name="DistManeuverLabel" type="Label" parent="GPSContainer/Details"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "IN 1,420 FT"
+
+[node name="DistRemainingLabel" type="Label" parent="GPSContainer/Details"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "REMAINING: 1.8 MI"
+
+[node name="EtaLabel" type="Label" parent="GPSContainer/Details"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "ETA: 02:15"
+
+[node name="TimerBox" type="Panel" parent="GPSContainer"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 105.0
+offset_top = -65.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="TimerTitle" type="Label" parent="GPSContainer/TimerBox"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 4.0
+offset_bottom = 20.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.8, 1)
+theme_override_font_sizes/font_size = 10
+text = "DELIVERY WINDOW"
+horizontal_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="GPSContainer/TimerBox"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -34.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 22
+text = "04:58"
+horizontal_alignment = 1
+
+[node name="PoliceHeatContainer" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -240.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 100.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dark")
+
+[node name="HeatTitle" type="Label" parent="PoliceHeatContainer"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 8.0
+offset_bottom = 24.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "POLICE HEAT"
+horizontal_alignment = 1
+
+[node name="StarsLabel" type="Label" parent="PoliceHeatContainer"]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -14.0
+offset_bottom = 16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "☆ ☆ ☆ ☆ ☆"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="PoliceHeatContainer"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -22.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "0 ★ CALM"
+horizontal_alignment = 1
+
+[node name="ManeuverBanner" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -260.0
+offset_top = 25.0
+offset_right = 260.0
+offset_bottom = 75.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
+
+[node name="BannerText" type="Label" parent="ManeuverBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 22
+text = "➔ RIGHT EXIT 42B — 800 FT ➔"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RetaliationBanner" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -320.0
+offset_top = 85.0
+offset_right = 320.0
+offset_bottom = 155.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_retaliation")
+
+[node name="VBox" type="VBoxContainer" parent="RetaliationBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="RetaliationBanner/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "⚡ RETALIATION MODE ACTIVE ⚡"
+horizontal_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="RetaliationBanner/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+text = "RETALIATION ACTIVE: 12.0s"
+horizontal_alignment = 1
+
+[node name="TelemetryCluster" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -180.0
+offset_right = 300.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dark")
+
+[node name="SpeedBox" type="HBoxContainer" parent="TelemetryCluster"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_right = 160.0
+grow_vertical = 2
+alignment = 1
+
+[node name="SpeedNumber" type="Label" parent="TelemetryCluster/SpeedBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 54
+text = "0"
+horizontal_alignment = 2
+
+[node name="MphLabel" type="Label" parent="TelemetryCluster/SpeedBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 18
+text = "MPH"
+
+[node name="GearRpmBox" type="VBoxContainer" parent="TelemetryCluster"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -90.0
+offset_top = -35.0
+offset_right = 90.0
+offset_bottom = 35.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="GearLabel" type="Label" parent="TelemetryCluster/GearRpmBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "GEAR 1"
+horizontal_alignment = 1
+
+[node name="RpmBar" type="ProgressBar" parent="TelemetryCluster/GearRpmBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+max_value = 2500.0
+value = 850.0
+show_percentage = false
+
+[node name="RpmLabel" type="Label" parent="TelemetryCluster/GearRpmBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "850 RPM"
+horizontal_alignment = 1
+
+[node name="HealthBars" type="VBoxContainer" parent="TelemetryCluster"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = 10.0
+offset_right = -15.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="TruckRow" type="HBoxContainer" parent="TelemetryCluster/HealthBars"]
+layout_mode = 2
+
+[node name="TruckTitle" type="Label" parent="TelemetryCluster/HealthBars/TruckRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "TRUCK:"
+
+[node name="TruckBar" type="ProgressBar" parent="TelemetryCluster/HealthBars"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+value = 100.0
+show_percentage = false
+
+[node name="TruckVal" type="Label" parent="TelemetryCluster/HealthBars"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "100%"
+horizontal_alignment = 2
+
+[node name="CargoRow" type="HBoxContainer" parent="TelemetryCluster/HealthBars"]
+layout_mode = 2
+
+[node name="CargoTitle" type="Label" parent="TelemetryCluster/HealthBars/CargoRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "CARGO:"
+
+[node name="CargoBar" type="ProgressBar" parent="TelemetryCluster/HealthBars"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+value = 100.0
+show_percentage = false
+
+[node name="CargoVal" type="Label" parent="TelemetryCluster/HealthBars"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "100%"
+horizontal_alignment = 2
+
+[node name="RageContainer" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -75.0
+offset_right = -40.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_rage_bg")
+
+[node name="RageBar" type="ProgressBar" parent="RageContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_rage_fill")
+value = 35.0
+show_percentage = false
+
+[node name="RageTierLabel" type="Label" parent="RageContainer"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -14.0
+offset_right = 260.0
+offset_bottom = 14.0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 16
+text = "ROAD RAGE: CALM [0%]"
+
+[node name="RetaliationPromptLabel" type="Label" parent="RageContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -14.0
+offset_right = 280.0
+offset_bottom = 14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 18
+text = "⚡ RETALIATION READY — PRESS SPACE TO UNLEASH WEAPONS ⚡"
+horizontal_alignment = 1
