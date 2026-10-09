@@ -1,11 +1,12 @@
 # VOXEL HAULER: ASPHALT RETALIATION
-### Version 1.0 — 3D Arcade Motor Hauling
+### Version 1.2 — Visual Quality & Vehicle Collision Upgrade
 
-[![Godot Engine](https://img.shields.io/badge/Godot-4.7-478cbf?logo=godotengine&logoColor=white)](https://godotengine.org)
-[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Web-blue)]()
+[![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Vercel%20%7C%20macOS%20%7C%20Windows-blue)]()
+[![Graphics](https://img.shields.io/badge/Graphics-3D%20Voxel%20Arcade-orange)]()
+[![Physics](https://img.shields.io/badge/Physics-4--Hit%20Push%20Impulse-red)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 
-A high-octane 3D arcade trucking game built on **Godot 4** and playable directly in the browser via **WebGL / Vercel**. Deliver high-value industrial supplies across dense highway traffic, battle aggressive road hazards, accumulate Road Rage, and unleash twin roof-mounted machine-gun turrets in **Retaliation Mode**!
+A high-octane 3D arcade trucking game playable directly in the browser via **WebGL / Vercel** (with native Godot desktop support). Deliver high-value industrial supplies across busy highways, push through traffic with realistic multi-hit vehicle collisions, battle aggressive road hazards, accumulate Road Rage, and unleash twin roof-mounted machine-gun turrets in **Retaliation Mode**!
 
 ---
 
@@ -15,30 +16,36 @@ A high-octane 3D arcade trucking game built on **Godot 4** and playable directly
 DRIVE ➔ NAVIGATE ➔ TRAFFIC CONFLICT ➔ RAGE ➔ RETALIATION ➔ POLICE PURSUIT ➔ DELIVERY ➔ SCORE
 ```
 
-1. **Class 8 Semi-Truck & Articulated Trailer:**
-   - 105 MPH top speed with heavy diesel torque, speed-sensitive steering inertia, and air-brake sound effects.
-   - Top-level trailer hitch kinematics with realistic swing and zero physics instability.
+1. **American Long-Nose Semi-Truck & High-Detail Trailer:**
+   - Detailed cab hood, grille, chrome bumper, windshield, dual exhaust stacks, mirrors, fuel tanks, and headlights.
+   - **High-detail trailer rear**: twin swinging split doors, 4 vertical galvanized locking bars with cam keepers and grab handles, 8 hinges, alternating Red/White DOT Conspicuity reflective tape, upper white corner markers, triple red ID clearance cluster, heavy ICC underride bumper, recessed brake/turn lights, chevron mudflaps, and tandem dual wheels.
+   - 105 MPH top speed with diesel torque, speed-sensitive steering inertia, air brakes, and realistic trailer articulation.
 2. **Interactive 3D Showroom Garage:**
-   - **REDLINE:** Crimson Red with polished chrome accents.
+   - **REDLINE:** Crimson Red with polished chrome stacks.
    - **BLUE THUNDER:** Electric Blue with neon cyan trim.
    - **NIGHT RIDER:** Midnight Black with stealth gunmetal plating.
-3. **Four-Lane Highway & Exit 42B Interchange:**
-   - 2.4 km asphalt route with concrete Jersey barriers, overhead gantries, and streetlights.
-   - Approaching Exit 42B triggers large glowing yellow chevron exit arrows on the roadway and large HUD announcements: `➔ RIGHT EXIT 42B — 800 FT ➔`.
-4. **Traffic Hazards & Provocateurs:**
-   - Multi-class civilian traffic (Sedans, SUVs, Sports Cars, Pickups, Vans).
-   - Aggressive drivers cut into your lane and brake-check, displaying floating 3D billboard `⚠ BRAKE!` warnings overhead.
-5. **5-Tier Road Rage System:**
-   - Calm (0–24%) ➔ Annoyed (25–49%) ➔ Furious (50–74%) ➔ Critical (75–99%) ➔ **RETALIATION READY (100%)**.
-6. **Dual-Turret Retaliation Mode:**
-   - At 100% rage, press `SPACE` to deploy twin machine-gun turrets.
-   - Camera widens, candidate targets receive 3D corner brackets (`TAB` to cycle targets), and Left Click discharges rapid twin arcade tracers.
-   - Offending vehicles explode into 22 scattering voxel debris fragments!
+3. **Daytime Open Highway Environment Engine:**
+   - Vibrant daytime lighting with bright cyan-blue sky, natural sunlight, sandy gravel shoulders, and wide green grass embankments.
+   - Rolling voxel canyon hills along horizons with sandstone strata and stepped grass caps.
+   - Wooden utility poles with crossbars every 42m, roadside pine trees, shrubs, Jersey barriers, and cantilever overpass bridges.
+4. **8 High-Detail Traffic Vehicles:**
+   - Compact Sedan, Sports Sedan, Full-Size SUV, Heavy Pickup Truck, Exotic Supercar, Commercial Delivery Van, Civilian Semi-Truck, and Highway Patrol Cruiser.
+   - Aggressive drivers cut into your lane and brake-check with floating `⚠ BRAKE!` warnings.
+5. **Vehicle Physical Collisions & Four-Hit Arcade Damage:**
+   - Semi-truck maintains heavy momentum, pushing smaller vehicles forward and sideways based on collision impulse.
+   - **Hit 1**: Push response + shower of sparks.
+   - **Hit 2**: Stronger push + permanent chassis crumple tilt + white hood smoke.
+   - **Hit 3**: Violent push + spin/skid-out + thick billowing black smoke and embers.
+   - **Hit 4**: Vehicle breaks apart into 36+ bouncing voxel debris chunks with ground bounce physics.
+6. **5-Tier Road Rage & Retaliation Combat:**
+   - Calm ➔ Annoyed ➔ Furious ➔ Critical ➔ **RETALIATION READY**.
+   - Press `SPACE` to deploy dual machine-gun turrets with raycast-assisted 3D trajectory aiming directly at enemy vehicles at 185 m/s.
+   - Instrumental Soft Rock cruising audio crossfades dynamically to high-energy Heavy Metal during Retaliation.
 7. **5-Star Police Heat & Pursuit AI:**
    - Escalating heat draws black-and-white pursuit cruisers with alternating red/blue lightbars and sirens attempting PIT maneuvers.
-8. **Delivery Mission & Scoring:**
-   - Pull into the illuminated yellow hazard delivery bay at **Riverside Logistics Center** to complete the run.
-   - Scoring grades performance from **S** to **D** based on time, cargo preservation %, truck durability, clean driving bonus, and police penalties.
+8. **Physical Warehouse Delivery & Multi-Contract Loop:**
+   - Deliver cargo to **Riverside Logistics Center**; animated roll-up door lifts on approach and seals behind trailer inside bay.
+   - Victory rank calculation (S to D) and progression into Contract Round 2 ("METRO CONTAINER SHIFT").
 
 ---
 

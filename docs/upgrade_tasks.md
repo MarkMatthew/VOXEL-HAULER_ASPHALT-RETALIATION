@@ -50,3 +50,43 @@
 - [x] H.2 Verify cross-browser performance at 60 FPS in WebGL.
 - [x] H.3 Commit changes to git and push to GitHub repository (`MarkMatthew/VOXEL-HAULER_ASPHALT-RETALIATION`).
 - [x] H.4 Verify live production build on Vercel.
+
+## Phase I: V1.2 Executive Build Directive — Visual Quality & Vehicle Collision Upgrade
+- [x] I.1 **Rear Trailer Detail Rebuild**:
+  - Twin swinging doors with recessed weatherstripping center seam.
+  - 4 heavy vertical galvanized locking bars with top/bottom cam keepers and horizontal handles.
+  - 8 outer cast-steel hinges along the outer door frame.
+  - Alternating Red/White DOT Conspicuity reflective safety tape across lower doors and bumper face.
+  - Top white inverted-L corner markers and triple red ID clearance cluster.
+  - Heavy ICC underride protection guard bumper with vertical steel struts.
+  - Recessed rear lighting cluster (intense red brake/tail lights + amber turn signals) and license plate.
+  - Heavy rubber mudflaps with white hazard chevrons and dual tandem wheels.
+- [x] I.2 **8 High-Detail Traffic Vehicles**:
+  - Rebuilt Compact Sedan (hood, cabin, trunk, roof).
+  - Rebuilt Sports Sedan (aggressive wedge nose, quad headlights, rear spoiler, dual exhaust).
+  - Rebuilt Full-Size SUV (boxy silhouette, roof rack rails, rear-mounted spare tire).
+  - Rebuilt Heavy Pickup Truck (crew cab, open cargo bed, tubular chrome rollbar with off-road lights).
+  - Rebuilt Exotic Supercar (ultra-low slung, cockpit canopy, aggressive rear diffuser, high-mounted wing).
+  - Rebuilt Commercial Delivery Van (tall cargo body, rear swinging doors, side rub strips).
+  - Rebuilt Civilian Semi-Truck (cab-over-engine, sleeper roof fairing, vertical exhaust, tanker trailer).
+  - Rebuilt Highway Patrol Cruiser (black-and-white pursuit livery, push-bumper, animated red/blue LED lightbar).
+- [x] I.3 **Daytime Open Highway Environment**:
+  - Pure vibrant daytime setting with natural sun illumination (`0xfffaec`, intensity 2.3), clear cyan-blue sky (`0x5dade2`), and clean atmosphere.
+  - Multi-tier rolling voxel canyon hills along both horizons with stratified sandstone and green grass terraces.
+  - Sandy gravel roadside shoulders and wide green grass embankments.
+  - Wooden utility poles with crossbars and transformers placed every 42m.
+  - Roadside pine trees, shrubs, concrete barriers, and cantilever highway overpasses.
+- [x] I.4 **Vehicle Physical Collisions & Four-Hit Arcade Damage**:
+  - Momentum-preserving collision push response shoves smaller cars forward and sideways based on impact velocity and direction.
+  - 0.42s collision cooldown prevents single-contact instant destruction.
+  - Hit 1: Vehicle pushed with physical impulse + shower of metallic sparks.
+  - Hit 2: Stronger push + permanent chassis crumple tilt + continuous white hood smoke.
+  - Hit 3: Violent push + loss of traction spin + thick billowing black smoke and burning embers.
+  - Hit 4: Vehicle breaks apart into 36+ bouncing voxel debris chunks with ground physics.
+- [x] I.5 **Turret Trajectory & Raycast Hit System**:
+  - Raycast-guided 3D aim trajectory directly targeting enemy vehicle core (`Y=0.65`) at 185 m/s, preventing projectiles from flying overhead.
+  - Integrated with Four-Hit damage system (Stage 1 / Stage 2 turret hit thresholds).
+- [x] I.6 **Visual QA Verification & Headless Screenshots**:
+  - Automated visual inspection harness (`?test=trailer`, `?test=traffic`, `?test=damage`, `?test=garage`, `?autostart=1`).
+  - Captured high-resolution verification screenshots stored in `docs/screenshots/`.
+
